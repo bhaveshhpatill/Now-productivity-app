@@ -274,6 +274,37 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 font-weight: 600;
                 flex-shrink: 0;
             }
+        /* Bubble Pop Animation */
+        @keyframes popBubble {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .bubble {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(91, 82, 232, 0.6));
+            box-shadow: 0 4px 12px rgba(91, 82, 232, 0.2), inset 0 0 10px rgba(255,255,255,0.5);
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .bubble.popped {
+            animation: popBubble 0.3s forwards;
+            pointer-events: none;
+        }
+        
+        /* Release Tool Animation */
+        @keyframes dissolveText {
+            0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+            50% { opacity: 0.5; transform: translateY(-20px) scale(1.05); filter: blur(4px); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.1); filter: blur(10px); }
+        }
+        .dissolve {
+            animation: dissolveText 2s forwards;
+        }
+        
         /* Desktop Optimization */
         @media (min-width: 900px) {
             #app-container {
@@ -476,15 +507,26 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <h1 class="mb-8">Focus Reset</h1>
             <p class="small text-secondary mb-24">Mini tools to help you reset your mind.</p>
             
+            <div class="card mb-24" style="background: var(--accent-soft); border-color: transparent;">
+                <h3 class="mb-8" style="color: var(--accent);">Quick Reset Thought</h3>
+                <p class="small mb-16" id="quick-reset-text" style="color: var(--text-primary); line-height: 1.5;"></p>
+                <button class="secondary" id="btn-quick-reset-next" style="width: auto; min-height: 36px; padding: 0 16px; font-size: 13px;">Next</button>
+            </div>
+
             <div class="flex-col gap-16">
                 <div class="card" style="cursor: pointer;" onclick="startFocusTool('breathe')">
                     <h3 class="mb-8">🌬️ Breathing Reset</h3>
                     <p class="small text-secondary">A 60-second guided breathing exercise to calm your nervous system.</p>
                 </div>
                 
-                <div class="card" style="cursor: pointer;" onclick="startFocusTool('react')">
-                    <h3 class="mb-8">🎯 Reaction Tap</h3>
-                    <p class="small text-secondary">A quick 10-round tapping game to reset your attention.</p>
+                <div class="card" style="cursor: pointer;" onclick="startFocusTool('bubble')">
+                    <h3 class="mb-8">🫧 Bubble Pop</h3>
+                    <p class="small text-secondary">Softly pop bubbles to ground your attention in the physical space.</p>
+                </div>
+
+                <div class="card" style="cursor: pointer;" onclick="startFocusTool('release')">
+                    <h3 class="mb-8">✍️ Release Tool</h3>
+                    <p class="small text-secondary">Dump what's in your head, then destroy it. Pure emotional release.</p>
                 </div>
             </div>
         </div>
@@ -496,16 +538,33 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <button class="secondary mt-auto" id="btn-tool-breathe-back" style="max-width: 200px;">Cancel</button>
         </div>
 
-        <!-- Screen: Focus Tool - React -->
-        <div id="screen-tool-react" class="screen hidden" style="background-color: var(--card-bg); position: relative;">
-            <p class="text-center mt-24 text-secondary" id="tool-react-counter">Round 1/10</p>
-            <div id="tool-react-dot" style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--accent); position: absolute; display: none; cursor: pointer;"></div>
-            <div id="tool-react-done" class="hidden flex-col items-center justify-center" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+        <!-- Screen: Focus Tool - Bubble Pop -->
+        <div id="screen-tool-bubble" class="screen hidden" style="background-color: var(--card-bg); position: relative; overflow: hidden; padding: 0;">
+            <div id="bubble-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+            
+            <div id="tool-bubble-done" class="hidden flex-col items-center justify-center" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10;">
                 <h2 class="mb-16">Done.</h2>
                 <p class="mb-24 text-secondary">You're ready. Go back.</p>
-                <button id="btn-tool-react-back" style="max-width: 200px;">Back</button>
+                <button id="btn-tool-bubble-back" style="max-width: 200px;">Back</button>
             </div>
-            <button class="text mt-auto" id="btn-tool-react-cancel" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: auto; min-height: auto;">Cancel</button>
+            
+            <button class="text" id="btn-tool-bubble-cancel" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: auto; min-height: auto; z-index: 10;">Cancel</button>
+        </div>
+
+        <!-- Screen: Focus Tool - Release -->
+        <div id="screen-tool-release" class="screen flex-col hidden" style="background-color: var(--card-bg);">
+            <div class="flex-col flex-grow" style="justify-content: center;" id="release-container">
+                <h2 class="mb-16 text-center">Dump what's in your head...</h2>
+                <textarea id="release-textarea" class="note-content" style="min-height: 200px; margin-bottom: 24px;" placeholder="Type anything. It won't be saved."></textarea>
+                <button id="btn-tool-release" style="max-width: 200px; margin: 0 auto;">Release</button>
+            </div>
+            
+            <div id="tool-release-done" class="hidden flex-col items-center justify-center flex-grow">
+                <h2 class="mb-16">Let it go.</h2>
+                <button class="secondary mt-24" id="btn-tool-release-back" style="max-width: 200px;">Back</button>
+            </div>
+
+            <button class="text mt-auto" id="btn-tool-release-cancel" style="width: auto; min-height: auto; align-self: center;">Cancel</button>
         </div>
 
         <!-- Bottom Nav -->
@@ -576,6 +635,13 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <div class="small" id="nudge-text" style="flex-grow: 1;">Nudge text</div>
         </div>
 
+        <div id="overlay-advice" class="overlay hidden flex-col items-center justify-center" style="z-index: 1000; background: rgba(249, 247, 243, 0.9);">
+            <div class="card w-full text-center" style="max-width: 320px; padding: 32px 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                <p class="mb-24 font-serif" id="advice-text" style="font-size: 21px; line-height: 1.4; color: var(--accent);"></p>
+                <button id="btn-advice-continue" style="max-width: 160px; margin: 0 auto;">Continue</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -637,6 +703,11 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             if(screenId === 'screen-tasks') renderTasks();
             if(screenId === 'screen-reminders') renderReminders();
             if(screenId === 'screen-notes') renderNotes();
+            if(screenId === 'screen-focus-tools') {
+                if (!document.getElementById('quick-reset-text').textContent) {
+                    getNextQuickReset();
+                }
+            }
         };
 
         document.querySelectorAll('.nav-item').forEach(nav => {
@@ -740,6 +811,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                         checkinAnswers.date = getTodayStr();
                         const newCheckins = [...state.checkins.filter(c => c.date !== getTodayStr()), checkinAnswers];
                         saveState('checkins', newCheckins);
+                        showDailyAdvice();
                         showScreen('screen-main');
                         checkEveningReflection();
                     }
@@ -1094,13 +1166,134 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         };
 
         // --- Focus Tools Logic ---
+        const mentalAdviceMessages = [
+            // Soft Grounding & Safety
+            "You don’t have to figure everything out right now—just being here is enough.",
+            "Take a slow breath… nothing else needs your attention in this moment.",
+            "You are allowed to pause, even if the world feels like it’s rushing.",
+            "This moment may feel heavy, but it is not permanent.",
+            "You’re safe to take things one step at a time, without pressure.",
+            "Even now, your body is trying to protect you, not harm you.",
+            "It’s okay to sit with yourself quietly, without fixing anything.",
+            "You can soften your shoulders, unclench your jaw, and just breathe.",
+            "There is no urgency in healing—you can move gently.",
+            "You don’t need to carry everything at once.",
+            "Rest is not something you earn, it’s something you need.",
+            "You can begin again, as many times as it takes.",
+            "You are not in danger, even if your thoughts feel loud.",
+            "It’s okay to feel this without understanding it fully.",
+            "Your breath can always bring you back to the present.",
+            "You are allowed to take up space, even in your quiet moments.",
+            "Nothing about this moment defines your entire life.",
+            "You can let things be unfinished for now.",
+            "You don’t need to rush your way out of this feeling.",
+            "Even small moments of calm count.",
+            "You are still here, and that matters.",
+            "You can be gentle with yourself today.",
+            "There is no right way to feel right now.",
+            "You don’t have to hold everything together perfectly.",
+            "You are allowed to just exist for a while.",
+            // When Thoughts Feel Heavy
+            "Your thoughts may be loud, but they are not always true.",
+            "You don’t have to follow every thought your mind creates.",
+            "It’s okay to let a thought pass without holding onto it.",
+            "Not everything your mind says deserves your energy.",
+            "You can notice a thought and still choose peace.",
+            "Your mind is trying to make sense of things, even if it feels messy.",
+            "You are not your thoughts—you are the one observing them.",
+            "It’s okay if your mind wanders; gently bring it back.",
+            "You don’t need to solve every “what if” right now.",
+            "Some thoughts are just noise, not signals.",
+            "You can choose which thoughts to give meaning to.",
+            "It’s okay to step away from overthinking.",
+            "You are allowed to rest your mind.",
+            "Let your thoughts come and go like passing clouds.",
+            "You don’t need certainty to feel calm.",
+            "Your thoughts don’t control your actions—you do.",
+            "It’s okay if clarity takes time.",
+            "You can come back to what’s real in this moment.",
+            "Your mind can slow down, even if it doesn’t feel like it now.",
+            "You don’t have to answer every question in your head.",
+            "Some things can remain unknown for now.",
+            "You are allowed to take a break from thinking.",
+            "Your mind is active, but you can still find stillness.",
+            "You can gently redirect your attention.",
+            "Peace doesn’t require perfect thoughts.",
+            // Self-Worth & Kindness
+            "You are worthy, even on days when you feel unsure.",
+            "You don’t need to prove your value to exist.",
+            "You are allowed to be imperfect and still be enough.",
+            "The way you speak to yourself matters—try softness.",
+            "You deserve the same kindness you give others.",
+            "You are not defined by your worst moments.",
+            "Growth takes time, and you are already on your way.",
+            "You are doing better than you think you are.",
+            "It’s okay to be a work in progress.",
+            "You are allowed to forgive yourself slowly.",
+            "You don’t have to be strong all the time.",
+            "You are still worthy, even when you feel tired.",
+            "Your effort matters, even if it’s unseen.",
+            "You are not behind—you are on your own timeline.",
+            "You can treat yourself with patience.",
+            "You are allowed to feel proud of small steps.",
+            "You don’t need to be perfect to be loved.",
+            "You are enough, even without achieving anything today.",
+            "Your presence has value.",
+            "You can learn without judging yourself.",
+            "You deserve peace, not constant pressure.",
+            "You can let go of harsh self-criticism.",
+            "You are allowed to grow at your own pace.",
+            "You don’t need to compare your journey to anyone else’s.",
+            "You are still becoming, and that’s okay.",
+            // Hard Days & Healing
+            "Some days are heavier, and that’s part of being human.",
+            "You don’t have to be okay all the time.",
+            "It’s okay to move slowly on difficult days.",
+            "You can rest and still be moving forward.",
+            "Healing is not linear—it has quiet days too.",
+            "You are allowed to take breaks from everything.",
+            "This feeling will shift, even if slowly.",
+            "You’ve made it through hard moments before.",
+            "You can hold pain and still keep going.",
+            "You don’t need to rush your healing.",
+            "It’s okay if today feels different from yesterday.",
+            "You are not alone in feeling this way.",
+            "You can ask for help when it feels too heavy.",
+            "Even difficult days have small moments of relief.",
+            "You are allowed to start again tomorrow.",
+            "You don’t have to carry yesterday into today.",
+            "You can let go of what you can’t change.",
+            "It’s okay to not have everything figured out.",
+            "You can survive this moment, just like others before it.",
+            "You are stronger than you feel right now.",
+            "You can keep going, gently.",
+            "There is still space for hope, even now.",
+            "You are allowed to take life one day at a time.",
+            "You can find your way, even if it takes time.",
+            "You will be okay, even if it doesn’t feel like it yet."
+        ];
+
+        const getNextQuickReset = () => {
+            const currentText = document.getElementById('quick-reset-text').textContent;
+            let nextMsg;
+            do {
+                nextMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
+            } while (nextMsg === currentText);
+            document.getElementById('quick-reset-text').textContent = nextMsg;
+        };
+
+        document.getElementById('btn-quick-reset-next').addEventListener('click', getNextQuickReset);
+
         window.startFocusTool = (tool) => {
             if (tool === 'breathe') {
                 showScreen('screen-tool-breathe');
                 startToolBreathe();
-            } else if (tool === 'react') {
-                showScreen('screen-tool-react');
-                startToolReact();
+            } else if (tool === 'bubble') {
+                showScreen('screen-tool-bubble');
+                startToolBubble();
+            } else if (tool === 'release') {
+                showScreen('screen-tool-release');
+                startToolRelease();
             }
         };
 
@@ -1164,61 +1357,103 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }
         };
 
-        // React Tool
-        let reactRound = 0;
-        let reactTimeout;
+        // Bubble Pop Tool
+        let bubblePops = 0;
+        let bubbleTimer;
+        let bubbleInterval;
 
-        const startToolReact = () => {
-            reactRound = 0;
-            document.getElementById('tool-react-done').classList.add('hidden');
-            document.getElementById('tool-react-counter').classList.remove('hidden');
-            document.getElementById('tool-react-dot').style.display = 'none';
-            document.getElementById('btn-tool-react-cancel').classList.remove('hidden');
+        const startToolBubble = () => {
+            bubblePops = 0;
+            const container = document.getElementById('bubble-container');
+            container.innerHTML = '';
+            document.getElementById('tool-bubble-done').classList.add('hidden');
+            document.getElementById('btn-tool-bubble-cancel').classList.remove('hidden');
             
-            document.getElementById('btn-tool-react-cancel').onclick = () => {
-                clearTimeout(reactTimeout);
-                showScreen('screen-focus-tools');
-            };
+            document.getElementById('btn-tool-bubble-cancel').onclick = stopToolBubble;
             
-            nextReactRound();
+            bubbleTimer = setTimeout(endToolBubble, 30000); // 30s limit
+            bubbleInterval = setInterval(spawnBubble, 800);
+            spawnBubble();
         };
 
-        const nextReactRound = () => {
-            if (reactRound >= 10) {
-                document.getElementById('tool-react-dot').style.display = 'none';
-                document.getElementById('tool-react-counter').classList.add('hidden');
-                document.getElementById('btn-tool-react-cancel').classList.add('hidden');
-                document.getElementById('tool-react-done').classList.remove('hidden');
-                
-                document.getElementById('btn-tool-react-back').onclick = () => {
-                    showScreen('screen-focus-tools');
-                };
-                return;
-            }
-
-            reactRound++;
-            document.getElementById('tool-react-counter').textContent = `Round ${reactRound}/10`;
-            document.getElementById('tool-react-dot').style.display = 'none';
-
-            const delay = Math.random() * 1500 + 500; // 500ms - 2000ms delay
+        const spawnBubble = () => {
+            if (bubblePops >= 15) return;
             
-            reactTimeout = setTimeout(() => {
-                const dot = document.getElementById('tool-react-dot');
+            const container = document.getElementById('bubble-container');
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            const size = Math.random() * 30 + 30; // 30-60px
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            
+            const safeX = Math.random() * (container.clientWidth - size);
+            const safeY = Math.random() * (container.clientHeight - size - 80); // leave bottom space
+            
+            bubble.style.left = `${safeX}px`;
+            bubble.style.top = `${safeY}px`;
+            
+            bubble.onclick = () => {
+                bubble.classList.add('popped');
+                bubblePops++;
+                setTimeout(() => bubble.remove(), 300);
+                if (bubblePops >= 15) endToolBubble();
+            };
+            
+            container.appendChild(bubble);
+            
+            // Remove unpopped bubbles after 3s
+            setTimeout(() => {
+                if (container.contains(bubble) && !bubble.classList.contains('popped')) {
+                    bubble.style.opacity = '0';
+                    setTimeout(() => bubble.remove(), 200);
+                }
+            }, 3000);
+        };
+
+        const stopToolBubble = () => {
+            clearTimeout(bubbleTimer);
+            clearInterval(bubbleInterval);
+            showScreen('screen-focus-tools');
+        };
+
+        const endToolBubble = () => {
+            clearTimeout(bubbleTimer);
+            clearInterval(bubbleInterval);
+            document.getElementById('bubble-container').innerHTML = '';
+            document.getElementById('btn-tool-bubble-cancel').classList.add('hidden');
+            document.getElementById('tool-bubble-done').classList.remove('hidden');
+            
+            document.getElementById('btn-tool-bubble-back').onclick = stopToolBubble;
+        };
+
+        // Release Tool
+        const startToolRelease = () => {
+            document.getElementById('tool-release-done').classList.add('hidden');
+            document.getElementById('release-container').classList.remove('hidden');
+            document.getElementById('btn-tool-release-cancel').classList.remove('hidden');
+            
+            const textarea = document.getElementById('release-textarea');
+            textarea.value = '';
+            textarea.classList.remove('dissolve');
+            
+            document.getElementById('btn-tool-release-cancel').onclick = () => showScreen('screen-focus-tools');
+            
+            document.getElementById('btn-tool-release').onclick = () => {
+                if(!textarea.value.trim()) return;
                 
-                // Calculate safe random bounds (avoiding edges and nav)
-                const safeX = Math.max(20, Math.random() * (window.innerWidth > 440 ? 400 : window.innerWidth - 68));
-                const safeY = Math.max(80, Math.random() * (window.innerHeight - 200));
+                textarea.classList.add('dissolve');
+                document.getElementById('btn-tool-release').style.display = 'none';
                 
-                dot.style.left = `${safeX}px`;
-                dot.style.top = `${safeY}px`;
-                dot.style.display = 'block';
-                
-                dot.onclick = () => {
-                    dot.style.display = 'none';
-                    dot.onclick = null;
-                    nextReactRound();
-                };
-            }, delay);
+                setTimeout(() => {
+                    document.getElementById('release-container').classList.add('hidden');
+                    document.getElementById('tool-release-done').classList.remove('hidden');
+                    document.getElementById('btn-tool-release-cancel').classList.add('hidden');
+                    document.getElementById('btn-tool-release').style.display = 'flex'; // reset
+                }, 2000);
+            };
+            
+            document.getElementById('btn-tool-release-back').onclick = () => showScreen('screen-focus-tools');
         };
 
         // --- Bottom Sheet & Add Logic ---
@@ -1620,8 +1855,38 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 document.getElementById('entry-greeting').textContent = `Hey ${state.user.username}.`;
                 showScreen('screen-pin-entry');
             }
+            getNextQuickReset();
         };
 
+        const showDailyAdvice = () => {
+            if (!sessionStorage.getItem('shown_advice_today')) {
+                const randomMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
+                document.getElementById('advice-text').textContent = randomMsg;
+                document.getElementById('overlay-advice').classList.remove('hidden');
+                
+                document.getElementById('btn-advice-continue').onclick = () => {
+                    document.getElementById('overlay-advice').classList.add('hidden');
+                    sessionStorage.setItem('shown_advice_today', 'true');
+                };
+            }
+        };
+
+        // Inject showDailyAdvice into the checkin complete flow
+        const checkCheckin = () => {
+            const today = getTodayStr();
+            const doneToday = state.checkins.some(c => c.date === today);
+            if(!doneToday) {
+                checkinStep = 0;
+                checkinAnswers = {};
+                showScreen('screen-checkin');
+                renderCheckinStep();
+            } else {
+                showDailyAdvice();
+                showScreen('screen-main');
+                checkEveningReflection();
+            }
+        };
+        
         init();
     </script>
 </body>
