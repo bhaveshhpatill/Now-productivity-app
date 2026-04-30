@@ -1,0 +1,1499 @@
+<!-- 
+=============================================================================
+Project: NOW - Student Productivity App
+Description: A complete single-file productivity web app built with vanilla 
+             HTML, CSS, and JS. No external frameworks. All data is stored 
+             securely in localStorage. 
+Features: PIN protection, daily check-ins, smart task selection, focus mode,
+          distraction tracking, reminders, notes vault, mental health advice.
+============================================================================= 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOW</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F9F7F3;
+            --card-bg: #ffffff;
+            --accent: #5B52E8;
+            --accent-soft: #EEEDFE;
+            --text-primary: #1C1B1A;
+            --text-secondary: #6B6860;
+            --text-muted: #A8A49D;
+            --success: #16A34A;
+            --success-bg: #DCFCE7;
+            --warn: #D97706;
+            --warn-bg: #FEF3C7;
+            --danger: #DC2626;
+            --danger-bg: #FEE2E2;
+            
+            --radius-card: 16px;
+            --radius-input: 10px;
+            --radius-pill: 50px;
+            
+            --font-sans: 'DM Sans', sans-serif;
+            --font-serif: 'DM Serif Display', serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            min-height: 100vh;
+            background-color: var(--bg);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: max-width 0.3s ease;
+        }
+
+        /* Typography */
+        h1, .font-serif { font-family: var(--font-serif); }
+        h1 { font-size: 28px; font-weight: normal; }
+        h2 { font-size: 21px; font-weight: normal; font-family: var(--font-serif); }
+        h3 { font-size: 17px; font-weight: 600; }
+        p { font-size: 15px; }
+        .small { font-size: 13px; color: var(--text-secondary); }
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-white { color: #fff; }
+        .text-danger { color: var(--danger); }
+
+        /* Screens */
+        .screen {
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-grow: 1;
+            transition: opacity 280ms ease, transform 280ms ease;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow-y: auto;
+            background-color: var(--bg);
+            z-index: 1;
+            padding-bottom: 84px;
+        }
+        .screen.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; z-index: 0; }
+
+        #screen-focus { background-color: var(--accent); color: white; padding-bottom: 24px; }
+        #screen-breathe { background-color: #ffffff; padding-bottom: 24px; }
+
+        /* Nav */
+        #bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 440px; height: 60px;
+            background: rgba(249, 247, 243, 0.8); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; border-top: 1px solid rgba(0,0,0,0.05);
+            transition: transform 280ms ease;
+        }
+        #bottom-nav.hidden { transform: translate(-50%, 100%); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 11px; gap: 4px; padding: 8px; cursor: pointer; }
+        .nav-item.active { color: var(--accent); }
+
+        /* Forms & Buttons */
+        input[type="text"], input[type="time"], input[type="date"] {
+            width: 100%; padding: 14px 16px; border-radius: var(--radius-input);
+            border: 1px solid rgba(0,0,0,0.1); font-family: inherit; font-size: 15px;
+            margin-bottom: 16px; background: var(--card-bg); outline: none;
+        }
+        input:focus { border-color: var(--accent); }
+        
+        button {
+            width: 100%; min-height: 48px; border-radius: var(--radius-pill); border: none;
+            background: var(--accent); color: white; font-family: inherit; font-size: 15px; font-weight: 500;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        button:active { transform: scale(0.98); }
+        button.secondary { background: var(--accent-soft); color: var(--accent); }
+        button.text { background: transparent; color: var(--text-secondary); }
+        button.white { background: white; color: var(--accent); }
+        button.big-tap { background: var(--card-bg); color: var(--text-primary); border: 1px solid rgba(0,0,0,0.08); font-size: 17px; justify-content: flex-start; padding: 0 20px; border-radius: var(--radius-card); margin-bottom: 12px; min-height: 64px; }
+        button.big-tap:focus, button.big-tap:active { border-color: var(--accent); background: var(--accent-soft); }
+
+        .pill-btn {
+            background: var(--card-bg); border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-pill);
+            padding: 8px 16px; font-size: 13px; color: var(--text-secondary); cursor: pointer;
+        }
+        .pill-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* Cards */
+        .card { background: var(--card-bg); border-radius: var(--radius-card); padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08); margin-bottom: 16px; }
+        .gradient-card { background: linear-gradient(135deg, #5B52E8 0%, #3B33AA 100%); color: white; }
+
+        /* Layout Utils */
+        .flex { display: flex; }
+        .flex-col { display: flex; flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-16 { gap: 16px; }
+        .gap-12 { gap: 12px; }
+        .gap-8 { gap: 8px; }
+        .gap-4 { gap: 4px; }
+        .mt-auto { margin-top: auto; }
+        .mt-24 { margin-top: 24px; }
+        .mt-16 { margin-top: 16px; }
+        .mt-8 { margin-top: 8px; }
+        .mb-24 { margin-bottom: 24px; }
+        .mb-16 { margin-bottom: 16px; }
+        .mb-8 { margin-bottom: 8px; }
+        .w-full { width: 100%; }
+
+        /* Numpad */
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 280px; margin: 0 auto; }
+        .numpad-btn { background: var(--card-bg); border-radius: 50%; width: 64px; height: 64px; font-size: 24px; color: var(--text-primary); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center; cursor: pointer; margin: 0 auto; }
+        .numpad-btn:active { background: var(--accent-soft); }
+        .dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; }
+        .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent); }
+        .dot.filled { background: var(--accent); }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+        /* Overlays */
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 200; display: flex; justify-content: center; align-items: center; padding: 24px; opacity: 1; transition: opacity 280ms ease, visibility 280ms ease; visibility: visible; }
+        .overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+        .nudge { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(0); width: calc(100% - 48px); max-width: 392px; background: var(--card-bg); border-radius: var(--radius-card); padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); z-index: 300; display: flex; align-items: center; gap: 12px; transition: transform 280ms ease, opacity 280ms ease; }
+        .nudge.hidden { transform: translateX(-50%) translateY(100px); opacity: 0; pointer-events: none; }
+
+        /* Timer */
+        .timer-text { font-size: 72px; font-weight: 300; font-variant-numeric: tabular-nums; margin: 24px 0; }
+        
+        /* Breathing Circle */
+        .breathe-circle { width: 200px; height: 200px; border-radius: 50%; background: var(--accent-soft); margin: 40px auto; transition: transform 1s linear; display: flex; justify-content: center; align-items: center; color: var(--accent); font-weight: 500; font-size: 18px; }
+
+        /* Task Items */
+        .task-row { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--card-bg); border-radius: var(--radius-input); margin-bottom: 8px; border: 1px solid rgba(0,0,0,0.05); }
+        .task-row.done { opacity: 0.5; text-decoration: line-through; }
+        .checkbox { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--text-muted); display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; }
+        .task-row.done .checkbox { background: var(--success); border-color: var(--success); }
+        .task-row.done .checkbox::after { content: '✓'; color: white; font-size: 14px; }
+        .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+        .task-actions { margin-left: auto; display: flex; gap: 8px; }
+        .icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--text-muted); width: 24px; height: 24px; min-height: auto; padding: 0; }
+
+        /* Quick Reminders Strip */
+        .reminders-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+        .reminders-strip::-webkit-scrollbar { display: none; }
+        .reminder-chip { background: var(--card-bg); border: 1px solid rgba(0,0,0,0.08); padding: 8px 12px; border-radius: var(--radius-pill); display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; cursor: pointer; }
+
+        /* Floating Button */
+        .fab { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: white; font-size: 28px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(91, 82, 232, 0.4); cursor: pointer; z-index: 90; transition: transform 0.2s; border: none; }
+        .fab:active { transform: scale(0.9); }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .streak-badge { background: var(--warn-bg); color: var(--warn); padding: 4px 10px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+
+        /* Progress dots */
+        .progress-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+        .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); opacity: 0.3; }
+        .progress-dot.active { opacity: 1; background: var(--accent); }
+
+        .confetti { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 64px; pointer-events: none; z-index: 1000; animation: pop 1s ease-out forwards; }
+        @keyframes pop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; } }
+
+        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 440px; background: var(--bg); border-radius: 24px 24px 0 0; padding: 24px; z-index: 250; transition: transform 300ms ease; box-shadow: 0 -4px 24px rgba(0,0,0,0.1); }
+        .sheet.open { transform: translateX(-50%) translateY(0); }
+        .sheet-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 240; opacity: 0; pointer-events: none; transition: opacity 300ms ease; }
+        .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+        
+        .emoji-picker { display: flex; gap: 12px; margin-bottom: 16px; font-size: 24px; }
+        .emoji-btn { background: none; border: none; padding: 4px; cursor: pointer; min-height: auto; border-radius: 8px; }
+        .emoji-btn.selected { background: var(--accent-soft); }
+
+            textarea.note-content {
+                width: 100%;
+                min-height: 120px;
+                padding: 14px 16px;
+                border-radius: var(--radius-input);
+                border: 1px solid rgba(0,0,0,0.1);
+                font-family: inherit;
+                font-size: 15px;
+                background: var(--card-bg);
+                outline: none;
+                resize: vertical;
+                margin-bottom: 8px;
+            }
+            textarea.note-content:focus {
+                border-color: var(--accent);
+            }
+            
+            .note-title-input {
+                width: 100%;
+                font-size: 17px;
+                font-weight: 600;
+                border: none;
+                background: transparent;
+                outline: none;
+                margin-bottom: 8px;
+                color: var(--text-primary);
+            }
+            
+            .mental-card {
+                background: var(--card-bg);
+                border-radius: var(--radius-card);
+                padding: 20px;
+                border: 1px solid rgba(0,0,0,0.08);
+            }
+            .mental-step {
+                display: flex;
+                gap: 12px;
+                margin-top: 12px;
+            }
+            .step-num {
+                background: var(--accent-soft);
+                color: var(--accent);
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 13px;
+                font-weight: 600;
+                flex-shrink: 0;
+            }
+        /* Desktop Optimization */
+        @media (min-width: 900px) {
+            #app-container {
+                max-width: 1000px;
+                flex-direction: row;
+                box-shadow: 0 0 40px rgba(0,0,0,0.05);
+            }
+            
+            #bottom-nav {
+                max-width: 1000px;
+            }
+            
+            .screen {
+                padding: 40px;
+            }
+            
+            #screen-main {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 40px;
+                align-content: start;
+            }
+
+            .main-left-col {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .main-right-col {
+                display: flex;
+                flex-direction: column;
+                border-left: 1px solid rgba(0,0,0,0.05);
+                padding-left: 40px;
+            }
+            
+            /* Hide headers inside columns to prevent duplicates */
+            .main-right-col .header { display: none; }
+            
+            /* Center auth/focus screens completely */
+            #screen-login, #screen-pin-setup, #screen-pin-entry, #screen-checkin, #screen-focus, #screen-breathe {
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .card.w-full { max-width: 400px; margin: 0 auto; }
+            #checkin-container { max-width: 500px; margin: 0 auto; width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+
+        <!-- Screen: Login -->
+        <div id="screen-login" class="screen flex-col items-center justify-center hidden">
+            <h1 class="mb-8 text-center">NOW</h1>
+            <p class="mb-24 text-center text-secondary">Your day, one thing at a time.</p>
+            <div class="card w-full">
+                <p class="small mb-16 text-center">Enter a username to get started. Your data stays on this device.</p>
+                <input type="text" id="login-username" placeholder="Username" autocomplete="off">
+                <button id="btn-login">Continue</button>
+            </div>
+        </div>
+
+        <!-- Screen: PIN Setup -->
+        <div id="screen-pin-setup" class="screen flex-col items-center justify-center hidden">
+            <h2 class="mb-8">Set a 4-digit PIN</h2>
+            <p class="small mb-24 text-center text-secondary">This keeps your space private. Don't worry — it's just for you.</p>
+            <div class="dots" id="setup-dots">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div class="numpad" id="setup-numpad">
+                <div class="numpad-btn" data-val="1">1</div><div class="numpad-btn" data-val="2">2</div><div class="numpad-btn" data-val="3">3</div>
+                <div class="numpad-btn" data-val="4">4</div><div class="numpad-btn" data-val="5">5</div><div class="numpad-btn" data-val="6">6</div>
+                <div class="numpad-btn" data-val="7">7</div><div class="numpad-btn" data-val="8">8</div><div class="numpad-btn" data-val="9">9</div>
+                <div></div><div class="numpad-btn" data-val="0">0</div><div class="numpad-btn text-muted" data-val="del">⌫</div>
+            </div>
+        </div>
+
+        <!-- Screen: PIN Entry -->
+        <div id="screen-pin-entry" class="screen flex-col items-center justify-center hidden">
+            <h2 class="mb-8" id="entry-greeting">Hey.</h2>
+            <p class="small mb-24 text-center text-secondary" id="entry-subtext">Enter your PIN to continue.</p>
+            <div class="dots" id="entry-dots">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div class="numpad" id="entry-numpad">
+                <div class="numpad-btn" data-val="1">1</div><div class="numpad-btn" data-val="2">2</div><div class="numpad-btn" data-val="3">3</div>
+                <div class="numpad-btn" data-val="4">4</div><div class="numpad-btn" data-val="5">5</div><div class="numpad-btn" data-val="6">6</div>
+                <div class="numpad-btn" data-val="7">7</div><div class="numpad-btn" data-val="8">8</div><div class="numpad-btn" data-val="9">9</div>
+                <div></div><div class="numpad-btn" data-val="0">0</div><div class="numpad-btn text-muted" data-val="del">⌫</div>
+            </div>
+            <button class="text mt-24" id="btn-signout" style="width:auto; min-height:auto;">Sign out</button>
+        </div>
+
+        <!-- Screen: Daily Check-in -->
+        <div id="screen-checkin" class="screen flex-col hidden">
+            <div class="progress-dots" id="checkin-progress">
+                <div class="progress-dot active"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div>
+            </div>
+            <div id="checkin-container" class="flex-col flex-grow">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Screen: Main Dashboard -->
+        <div id="screen-main" class="screen hidden">
+            <div class="main-left-col">
+                <div class="header">
+                    <h1 id="main-greeting">NOW</h1>
+                    <div class="streak-badge" id="streak-display">🔥 0</div>
+                </div>
+
+                <div class="card gradient-card flex-col" id="main-task-card">
+                    <!-- Injected via JS -->
+                </div>
+
+                <h3 class="mb-12 mt-16">Today</h3>
+                <div id="main-tasks-list" class="flex-col gap-8 mb-24">
+                    <!-- Injected via JS -->
+                </div>
+
+                <h3 class="mb-12">Quick Reminders</h3>
+                <div class="reminders-strip mb-24" id="main-reminders-list">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+            
+            <div class="main-right-col" id="main-right-panel">
+                <!-- Notes injected here for desktop -->
+            </div>
+        </div>
+
+        <!-- Screen: Focus Mode -->
+        <div id="screen-focus" class="screen flex-col items-center justify-center hidden">
+            <p class="small text-white mb-24 text-center" style="opacity: 0.7;" id="focus-task-name">Task Name</p>
+            <div class="timer-text" id="focus-timer">25:00</div>
+            <p class="small text-white mb-24" style="opacity: 0.7;">focus session</p>
+            
+            <button class="white mb-16" id="btn-focus-done" style="max-width: 200px; color: var(--accent);">Done ✓</button>
+            <button class="text text-white" id="btn-focus-break" style="width: auto; min-height: auto; opacity: 0.8;">Need a break</button>
+        </div>
+
+        <!-- Screen: Breathing Break -->
+        <div id="screen-breathe" class="screen flex-col items-center justify-center hidden">
+            <h2 class="mb-8">Take a breath.</h2>
+            <p class="small text-secondary mb-24">Just 60 seconds. Then back to it.</p>
+            
+            <div class="breathe-circle" id="breathe-circle">Breathe in...</div>
+            
+            <button class="secondary mt-auto" id="btn-breathe-back">I'm ready, back to work</button>
+        </div>
+
+        <!-- Screen: Tasks -->
+        <div id="screen-tasks" class="screen hidden">
+            <h1 class="mb-24">Your tasks</h1>
+            
+            <div id="tasks-list" class="flex-col gap-8">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Screen: Reminders -->
+        <div id="screen-reminders" class="screen hidden">
+            <h1 class="mb-8">Reminders</h1>
+            <p class="small text-secondary mb-24">Quick things you don't want to forget.</p>
+            
+            <h3 class="mb-12">Quick Add</h3>
+            <div class="flex gap-8 mb-24" style="flex-wrap: wrap;">
+                <div class="reminder-chip quick-add-chip">💧 Drink water</div>
+                <div class="reminder-chip quick-add-chip">📞 Make a call</div>
+                <div class="reminder-chip quick-add-chip">📧 Check emails</div>
+                <div class="reminder-chip quick-add-chip">🍎 Eat something</div>
+                <div class="reminder-chip quick-add-chip">💊 Take meds</div>
+                <div class="reminder-chip quick-add-chip">📖 Review notes</div>
+            </div>
+
+            <h3 class="mb-12">Your Reminders</h3>
+            <div id="reminders-list" class="flex-col gap-8">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Screen: Notes -->
+        <div id="screen-notes" class="screen hidden">
+            <div class="header">
+                <h1>Notes Vault</h1>
+                <button class="pill-btn active" id="btn-new-note" style="width:auto; min-height:auto;">+ New</button>
+            </div>
+            <p class="small text-secondary mb-24">Dump everything important here. Auto-saved.</p>
+            
+            <div id="notes-list" class="flex-col gap-12">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Screen: Mental Health -->
+        <div id="screen-mental" class="screen hidden">
+            <h1 class="mb-8">Mental Check</h1>
+            <p class="small text-secondary mb-24">Practical, actionable steps for when you're stuck.</p>
+            
+            <div class="flex gap-8 mb-24" style="flex-wrap: wrap;" id="mental-filters">
+                <div class="pill-btn active" data-filter="all">All</div>
+                <div class="pill-btn" data-filter="focus">Focus</div>
+                <div class="pill-btn" data-filter="anxiety">Anxiety</div>
+                <div class="pill-btn" data-filter="overthinking">Overthinking</div>
+                <div class="pill-btn" data-filter="energy">Low Energy</div>
+            </div>
+
+            <div id="mental-list" class="flex-col gap-16">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <nav id="bottom-nav" class="hidden">
+            <div class="nav-item active" data-target="screen-main"><span style="font-size: 20px;">🏠</span><span>Home</span></div>
+            <div class="nav-item" data-target="screen-tasks"><span style="font-size: 20px;">✓</span><span>Tasks</span></div>
+            <div class="nav-item" data-target="screen-reminders"><span style="font-size: 20px;">🔔</span><span>Reminders</span></div>
+            <div class="nav-item" data-target="screen-notes"><span style="font-size: 20px;">📝</span><span>Notes</span></div>
+            <div class="nav-item" data-target="screen-mental"><span style="font-size: 20px;">🧠</span><span>Mental</span></div>
+        </nav>
+
+        <!-- Floating Action Button -->
+        <button class="fab hidden" id="fab-add">+</button>
+
+        <!-- Add Sheet -->
+        <div class="sheet-backdrop" id="add-sheet-backdrop"></div>
+        <div class="sheet" id="add-sheet">
+            <div class="flex gap-16 mb-16 border-b" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px;">
+                <div class="tab-btn active" id="tab-task" style="font-weight:600; cursor:pointer;">Task</div>
+                <div class="tab-btn" id="tab-reminder" style="font-weight:600; cursor:pointer; color:var(--text-muted);">Reminder</div>
+            </div>
+            
+            <div id="form-task">
+                <input type="text" id="add-task-name" placeholder="Task name" autocomplete="off">
+                <input type="text" id="add-task-subject" placeholder="Subject (e.g. ML, Maths, Personal)" autocomplete="off">
+                <input type="date" id="add-task-date">
+                <div class="flex gap-8 mb-16" id="add-task-time-pills">
+                    <div class="pill-btn" data-val="15">15 min</div>
+                    <div class="pill-btn active" data-val="30">30 min</div>
+                    <div class="pill-btn" data-val="45">45 min</div>
+                    <div class="pill-btn" data-val="60">60 min</div>
+                </div>
+                <button id="btn-submit-task">Add task</button>
+            </div>
+
+            <div id="form-reminder" class="hidden">
+                <div class="emoji-picker" id="add-reminder-emoji">
+                    <button class="emoji-btn selected">💡</button>
+                    <button class="emoji-btn">⏰</button>
+                    <button class="emoji-btn">📌</button>
+                    <button class="emoji-btn">🎯</button>
+                    <button class="emoji-btn">🔔</button>
+                    <button class="emoji-btn">✍️</button>
+                </div>
+                <input type="text" id="add-reminder-text" placeholder="What do you want to remember?" autocomplete="off">
+                <p class="small mb-8">Optional time (for notification)</p>
+                <input type="time" id="add-reminder-time">
+                <button id="btn-submit-reminder">Add reminder</button>
+            </div>
+        </div>
+
+        <!-- Overlays -->
+        <div id="overlay-evening" class="overlay hidden">
+            <div class="card w-full" id="evening-content">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <div id="overlay-distraction" class="overlay hidden flex-col items-center justify-center text-white" style="background: rgba(91, 82, 232, 0.98);">
+            <p class="mb-16">You were working on:</p>
+            <h2 class="mb-24 text-center" id="distraction-task-name">Task Name</h2>
+            <button class="white mb-16" id="btn-distraction-back" style="max-width: 200px; color: var(--accent);">Back to it →</button>
+            <button class="text text-white small" id="btn-distraction-done" style="width:auto; min-height:auto;">Or mark as done if you finished.</button>
+        </div>
+
+        <div id="nudge-card" class="nudge hidden" style="cursor: pointer;">
+            <div style="font-size: 24px;" id="nudge-icon">💡</div>
+            <div class="small" id="nudge-text" style="flex-grow: 1;">Nudge text</div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            user: JSON.parse(localStorage.getItem('now_user') || 'null'),
+            tasks: JSON.parse(localStorage.getItem('now_tasks') || '[]'),
+            reminders: JSON.parse(localStorage.getItem('now_reminders') || '[]'),
+            notes: JSON.parse(localStorage.getItem('now_notes') || '[]'),
+            checkins: JSON.parse(localStorage.getItem('now_checkins') || '[]'),
+            reflections: JSON.parse(localStorage.getItem('now_reflections') || '[]'),
+            streak: JSON.parse(localStorage.getItem('now_streak') || '{"current":0,"lastDate":null}')
+        };
+
+        const saveState = (key, value) => {
+            state[key] = value;
+            localStorage.setItem(`now_${key}`, JSON.stringify(value));
+        };
+
+        const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+        // --- Crypto Helper ---
+        const hashPin = async (pin) => {
+            const msgBuffer = new TextEncoder().encode(pin + "now_2024_salt");
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        };
+
+        // --- Screen Management ---
+        const screens = document.querySelectorAll('.screen');
+        const bottomNav = document.getElementById('bottom-nav');
+        const fab = document.getElementById('fab-add');
+        
+        let currentScreen = '';
+
+        const showScreen = (screenId) => {
+            currentScreen = screenId;
+            screens.forEach(s => s.classList.add('hidden'));
+            const target = document.getElementById(screenId);
+            if(target) {
+                target.classList.remove('hidden');
+                target.scrollTop = 0;
+            }
+            
+            const navVisible = ['screen-main', 'screen-tasks', 'screen-reminders', 'screen-notes', 'screen-mental'].includes(screenId);
+            if(navVisible) {
+                bottomNav.classList.remove('hidden');
+                fab.classList.remove('hidden');
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.toggle('active', nav.dataset.target === screenId);
+                });
+            } else {
+                bottomNav.classList.add('hidden');
+                fab.classList.add('hidden');
+            }
+
+            if(screenId === 'screen-main') renderMain();
+            if(screenId === 'screen-tasks') renderTasks();
+            if(screenId === 'screen-reminders') renderReminders();
+            if(screenId === 'screen-notes') renderNotes();
+            if(screenId === 'screen-mental') renderMental();
+        };
+
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            nav.addEventListener('click', () => showScreen(nav.dataset.target));
+        });
+
+        // --- Login ---
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const username = document.getElementById('login-username').value.trim();
+            if(username) {
+                saveState('user', { username, pinHash: null });
+                showScreen('screen-pin-setup');
+            }
+        });
+
+        // --- PIN Logic ---
+        let pinBuffer = '';
+        const handleNumpad = async (val, mode) => {
+            if(val === 'del') {
+                pinBuffer = pinBuffer.slice(0, -1);
+            } else if(pinBuffer.length < 4) {
+                pinBuffer += val;
+            }
+            
+            const dots = document.getElementById(`${mode}-dots`).children;
+            for(let i=0; i<4; i++) {
+                if(i < pinBuffer.length) dots[i].classList.add('filled');
+                else dots[i].classList.remove('filled');
+            }
+
+            if(pinBuffer.length === 4) {
+                const hashed = await hashPin(pinBuffer);
+                if(mode === 'setup') {
+                    state.user.pinHash = hashed;
+                    saveState('user', state.user);
+                    pinBuffer = '';
+                    checkCheckin();
+                } else if(mode === 'entry') {
+                    if(hashed === state.user.pinHash) {
+                        pinBuffer = '';
+                        checkCheckin();
+                    } else {
+                        const dotsContainer = document.getElementById('entry-dots');
+                        dotsContainer.classList.add('shake');
+                        document.getElementById('entry-subtext').textContent = 'Try again';
+                        document.getElementById('entry-subtext').classList.add('text-danger');
+                        setTimeout(() => {
+                            dotsContainer.classList.remove('shake');
+                            pinBuffer = '';
+                            for(let i=0; i<4; i++) dots[i].classList.remove('filled');
+                        }, 400);
+                    }
+                }
+            }
+        };
+
+        document.querySelectorAll('#setup-numpad .numpad-btn').forEach(btn => {
+            if(btn.dataset.val) btn.addEventListener('click', () => handleNumpad(btn.dataset.val, 'setup'));
+        });
+        document.querySelectorAll('#entry-numpad .numpad-btn').forEach(btn => {
+            if(btn.dataset.val) btn.addEventListener('click', () => handleNumpad(btn.dataset.val, 'entry'));
+        });
+
+        document.getElementById('btn-signout').addEventListener('click', () => {
+            Object.keys(localStorage).forEach(k => {
+                if(k.startsWith('now_')) localStorage.removeItem(k);
+            });
+            location.reload();
+        });
+
+        // --- Daily Check-in ---
+        const checkinQuestions = [
+            { id: 'energy', q: "Before we dive in — how's your battery right now?", opts: [{t:"🔋 Fully charged", v:"high"}, {t:"⚡ Good enough", v:"medium"}, {t:"🪫 Running low", v:"low"}, {t:"☕ Need to refuel", v:"very_low"}] },
+            { id: 'environment', q: "What's the space around you like?", opts: [{t:"🔇 Quiet, all to myself", v:"great"}, {t:"🔊 Bit noisy but okay", v:"okay"}, {t:"🌪️ Pretty chaotic", v:"bad"}, {t:"📍 On the move", v:"mobile"}] },
+            { id: 'yesterday', q: "Yesterday — did things go roughly as planned?", opts: [{t:"✅ Mostly yes", v:"good"}, {t:"🔄 Hit and miss", v:"mixed"}, {t:"🌊 Got swept away", v:"bad"}, {t:"📋 Didn't really plan", v:"none"}] },
+            { id: 'mode', q: "What kind of mode are you in today?", opts: [{t:"🚀 Ready to push", v:"high"}, {t:"🐢 Slow and deliberate", v:"steady"}, {t:"🌊 Just going with it", v:"flow"}, {t:"🛡️ Trying to hold it together", v:"survival"}] },
+            { id: 'blocker', q: "Is anything pulling your attention right now?", opts: [{t:"🧘 Nope, I'm clear", v:"clear"}, {t:"💭 Something on my mind", v:"thoughts"}, {t:"📱 Phone keeps calling", v:"phone"}, {t:"👥 People around me", v:"people"}] }
+        ];
+        
+        let checkinStep = 0;
+        let checkinAnswers = {};
+
+        const renderCheckinStep = () => {
+            const q = checkinQuestions[checkinStep];
+            const container = document.getElementById('checkin-container');
+            container.innerHTML = `<h2 class="mb-24">${q.q}</h2>` + 
+                q.opts.map(o => `<button class="big-tap checkin-opt" data-val="${o.v}">${o.t}</button>`).join('');
+            
+            const dots = document.getElementById('checkin-progress').children;
+            for(let i=0; i<5; i++) {
+                dots[i].className = 'progress-dot' + (i === checkinStep ? ' active' : '');
+            }
+
+            document.querySelectorAll('.checkin-opt').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    checkinAnswers[q.id] = e.target.dataset.val;
+                    if(checkinStep < 4) {
+                        checkinStep++;
+                        setTimeout(renderCheckinStep, 300);
+                    } else {
+                        checkinAnswers.date = getTodayStr();
+                        const newCheckins = [...state.checkins.filter(c => c.date !== getTodayStr()), checkinAnswers];
+                        saveState('checkins', newCheckins);
+                        showScreen('screen-main');
+                        checkEveningReflection();
+                    }
+                });
+            });
+        };
+
+        const checkCheckin = () => {
+            const today = getTodayStr();
+            const doneToday = state.checkins.some(c => c.date === today);
+            if(!doneToday) {
+                checkinStep = 0;
+                checkinAnswers = {};
+                showScreen('screen-checkin');
+                renderCheckinStep();
+            } else {
+                showScreen('screen-main');
+                checkEveningReflection();
+            }
+        };
+
+        // --- Smart Task Selection Logic ---
+        let currentSuggestedTaskIndex = 0;
+        
+        const getNowTasks = () => {
+            const incomplete = state.tasks.filter(t => !t.done);
+            if(incomplete.length === 0) return [];
+            
+            const todayCheckin = state.checkins.find(c => c.date === getTodayStr()) || {};
+            let selectedTasks = [...incomplete];
+            let contextMsg = "Here's what makes the most sense right now.";
+
+            // Apply rules
+            if(todayCheckin.energy === 'very_low' || todayCheckin.mode === 'survival') {
+                selectedTasks.sort((a, b) => a.estimatedMins - b.estimatedMins);
+                contextMsg = "You're running on low today. Picked the quickest thing. Just start there.";
+            } else if(todayCheckin.energy === 'low' && todayCheckin.environment === 'bad') {
+                const shortTasks = selectedTasks.filter(t => t.estimatedMins <= 20);
+                if(shortTasks.length > 0) selectedTasks = shortTasks;
+                selectedTasks.sort((a, b) => a.estimatedMins - b.estimatedMins);
+                contextMsg = "Tough conditions. One small thing, then reassess.";
+            } else if(todayCheckin.blocker === 'thoughts') {
+                selectedTasks.sort((a, b) => new Date(a.deadline || '2099') - new Date(b.deadline || '2099'));
+                contextMsg = "Something's on your mind — that's okay. Try 10 minutes on this, then check in with yourself.";
+            } else if(todayCheckin.blocker === 'phone') {
+                selectedTasks.sort((a, b) => new Date(a.deadline || '2099') - new Date(b.deadline || '2099'));
+                contextMsg = "Phone's pulling at you. Pop it face-down. 25 minutes. You've got it.";
+            } else if(todayCheckin.energy === 'high' && todayCheckin.mode === 'high') {
+                selectedTasks.sort((a, b) => new Date(a.deadline || '2099') - new Date(b.deadline || '2099'));
+                contextMsg = "You're in a good spot right now. Make it count.";
+            } else if(todayCheckin.environment === 'mobile') {
+                const shortTasks = selectedTasks.filter(t => t.estimatedMins <= 30);
+                if(shortTasks.length > 0) selectedTasks = shortTasks;
+                contextMsg = "On the move — picked something you can handle anywhere.";
+            } else if(todayCheckin.yesterday === 'bad') {
+                selectedTasks.sort((a, b) => a.estimatedMins - b.estimatedMins);
+                contextMsg = "Yesterday was rough. Today just needs one win. Start here.";
+            } else {
+                selectedTasks.sort((a, b) => new Date(a.deadline || '2099') - new Date(b.deadline || '2099'));
+            }
+
+            return selectedTasks.map(t => ({...t, contextMsg}));
+        };
+
+        // --- Rendering ---
+        const renderMain = () => {
+            // Streak
+            const today = getTodayStr();
+            if(state.streak.lastDate && state.streak.lastDate !== today) {
+                const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                if(state.streak.lastDate !== yesterday.toISOString().split('T')[0]) {
+                    saveState('streak', { current: 0, lastDate: null });
+                }
+            }
+            document.getElementById('streak-display').textContent = `🔥 ${state.streak.current}`;
+
+            // Smart Task
+            const nowTasks = getNowTasks();
+            const card = document.getElementById('main-task-card');
+            if(nowTasks.length > 0) {
+                if(currentSuggestedTaskIndex >= nowTasks.length) currentSuggestedTaskIndex = 0;
+                const task = nowTasks[currentSuggestedTaskIndex];
+                card.innerHTML = `
+                    <p class="small text-white mb-8" style="opacity:0.8">${task.contextMsg}</p>
+                    <h2 class="mb-16 font-serif">${task.name}</h2>
+                    <div class="flex gap-8 mb-24">
+                        ${task.subject ? `<span class="badge" style="background:rgba(255,255,255,0.2);color:white;">${task.subject}</span>` : ''}
+                        <span class="badge" style="background:rgba(255,255,255,0.2);color:white;">~${task.estimatedMins}m</span>
+                    </div>
+                    <button class="white mb-12" onclick="startFocus('${task.id}')" style="color:var(--accent);">Start focus</button>
+                    ${nowTasks.length > 1 ? `<button class="text text-white small" onclick="cycleTask()" style="width:auto;margin:0 auto;min-height:auto;">Not this — show something else</button>` : ''}
+                `;
+            } else {
+                card.innerHTML = `<p class="text-center text-white">Nothing added yet — tap + to add your first task</p>`;
+            }
+
+            // Today's Tasks
+            const tasksList = document.getElementById('main-tasks-list');
+            const incomplete = state.tasks.filter(t => !t.done).sort((a,b) => new Date(a.deadline||'2099') - new Date(b.deadline||'2099'));
+            tasksList.innerHTML = incomplete.map(t => `
+                <div class="task-row">
+                    <div class="checkbox" onclick="toggleTask('${t.id}')"></div>
+                    <div style="flex-grow:1; overflow:hidden;">
+                        <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</div>
+                        ${t.deadline ? `<div class="small mt-4">Due: ${t.deadline}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // Reminders Strip
+            const rems = state.reminders.filter(r => !r.notified).slice(0,3);
+            const remsList = document.getElementById('main-reminders-list');
+            remsList.innerHTML = rems.map(r => `
+                <div class="reminder-chip" onclick="dismissReminder('${r.id}')">${r.emoji} ${r.text} ${r.time ? `· ${r.time}` : ''}</div>
+            `).join('');
+            if(rems.length === 0) remsList.innerHTML = `<div class="small text-muted">No upcoming reminders</div>`;
+            
+            // Render notes into right panel on desktop
+            if (window.innerWidth >= 900) {
+                const rightPanel = document.getElementById('main-right-panel');
+                rightPanel.innerHTML = `
+                    <div class="header">
+                        <h1>Notes Vault</h1>
+                        <button class="pill-btn active" id="btn-new-note-desktop" style="width:auto; min-height:auto;">+ New</button>
+                    </div>
+                    <div id="notes-list-desktop" class="flex-col gap-12"></div>
+                `;
+                document.getElementById('btn-new-note-desktop').addEventListener('click', createNewNote);
+                renderNotesList('notes-list-desktop');
+            }
+        };
+
+        window.cycleTask = () => {
+            currentSuggestedTaskIndex++;
+            renderMain();
+        };
+
+        const renderTasks = () => {
+            const list = document.getElementById('tasks-list');
+            const sorted = [...state.tasks].sort((a,b) => {
+                if(a.done !== b.done) return a.done ? 1 : -1;
+                return new Date(a.deadline||'2099') - new Date(b.deadline||'2099');
+            });
+            
+            if(sorted.length === 0) {
+                list.innerHTML = `<p class="text-center text-muted mt-24">No tasks yet. Add one with +.</p>`;
+                return;
+            }
+
+            list.innerHTML = sorted.map(t => `
+                <div class="task-row ${t.done ? 'done' : ''}">
+                    <div class="checkbox" onclick="toggleTask('${t.id}')"></div>
+                    <div style="flex-grow:1; overflow:hidden;">
+                        <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</div>
+                        <div class="flex gap-8 mt-4">
+                            ${t.subject ? `<span class="badge">${t.subject}</span>` : ''}
+                            ${t.deadline ? `<span class="badge" style="background:var(--warn-bg);color:var(--warn);">${t.deadline}</span>` : ''}
+                            <span class="badge text-muted" style="background:transparent;border:1px solid rgba(0,0,0,0.1);">~${t.estimatedMins}m</span>
+                        </div>
+                    </div>
+                    <button class="icon-btn" onclick="confirmDeleteTask('${t.id}', this)">🗑️</button>
+                </div>
+            `).join('');
+        };
+
+        const renderReminders = () => {
+            const list = document.getElementById('reminders-list');
+            if(state.reminders.length === 0) {
+                list.innerHTML = `<p class="text-center text-muted mt-24">No reminders active.</p>`;
+                return;
+            }
+            list.innerHTML = state.reminders.map(r => `
+                <div class="task-row">
+                    <div style="font-size:24px;">${r.emoji}</div>
+                    <div style="flex-grow:1;">
+                        <div>${r.text}</div>
+                        ${r.time ? `<div class="small text-muted mt-4">🔔 ${r.time}</div>` : ''}
+                    </div>
+                    <button class="icon-btn" onclick="confirmDeleteReminder('${r.id}', this)">🗑️</button>
+                </div>
+            `).join('');
+        };
+
+        // --- Task Actions ---
+        window.toggleTask = (id) => {
+            const task = state.tasks.find(t => t.id === id);
+            if(task) {
+                task.done = !task.done;
+                task.doneAt = task.done ? new Date().toISOString() : null;
+                saveState('tasks', state.tasks);
+                
+                if(task.done) {
+                    const today = getTodayStr();
+                    if(state.streak.lastDate !== today) {
+                        saveState('streak', { current: state.streak.current + 1, lastDate: today });
+                    }
+                    showNudge();
+                }
+                
+                if(currentScreen === 'screen-main') renderMain();
+                if(currentScreen === 'screen-tasks') renderTasks();
+            }
+        };
+
+        window.confirmDeleteTask = (id, btn) => {
+            const og = btn.innerHTML;
+            btn.innerHTML = 'Sure?';
+            btn.style.width = 'auto';
+            btn.style.color = 'var(--danger)';
+            btn.onclick = () => {
+                saveState('tasks', state.tasks.filter(t => t.id !== id));
+                renderTasks();
+                if(currentScreen === 'screen-main') renderMain();
+            };
+            setTimeout(() => {
+                if(document.body.contains(btn)) {
+                    btn.innerHTML = og;
+                    btn.style.color = '';
+                    btn.onclick = () => confirmDeleteTask(id, btn);
+                }
+            }, 3000);
+        };
+
+        window.dismissReminder = (id) => {
+            const rem = state.reminders.find(r => r.id === id);
+            if(rem) {
+                rem.notified = true;
+                saveState('reminders', state.reminders);
+                renderMain();
+            }
+        };
+
+        window.confirmDeleteReminder = (id, btn) => {
+            const og = btn.innerHTML;
+            btn.innerHTML = 'Sure?';
+            btn.style.width = 'auto';
+            btn.style.color = 'var(--danger)';
+            btn.onclick = () => {
+                saveState('reminders', state.reminders.filter(r => r.id !== id));
+                renderReminders();
+                if(currentScreen === 'screen-main') renderMain();
+            };
+            setTimeout(() => {
+                if(document.body.contains(btn)) {
+                    btn.innerHTML = og;
+                    btn.style.color = '';
+                    btn.onclick = () => confirmDeleteReminder(id, btn);
+                }
+            }, 3000);
+        };
+
+        // --- Notes Logic ---
+        const createNewNote = () => {
+            const newNote = {
+                id: 'n_' + Date.now(),
+                title: 'Untitled Note',
+                content: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            saveState('notes', [newNote, ...state.notes]);
+            if(currentScreen === 'screen-notes') renderNotes();
+            if(currentScreen === 'screen-main') renderMain();
+        };
+
+        document.getElementById('btn-new-note').addEventListener('click', createNewNote);
+
+        const renderNotesList = (containerId) => {
+            const list = document.getElementById(containerId);
+            if(!list) return;
+            
+            if(state.notes.length === 0) {
+                list.innerHTML = `<p class="text-center text-muted mt-24">No notes yet. Start dumping.</p>`;
+                return;
+            }
+
+            list.innerHTML = state.notes.map(n => `
+                <div class="card" style="padding: 16px;">
+                    <div class="flex justify-between items-center mb-8">
+                        <input type="text" class="note-title-input" value="${n.title}" data-id="${n.id}" placeholder="Note Title">
+                        <button class="icon-btn" onclick="confirmDeleteNote('${n.id}', this)">🗑️</button>
+                    </div>
+                    <textarea class="note-content" data-id="${n.id}" placeholder="Type or paste anything here...">${n.content}</textarea>
+                    <div class="small text-muted text-right">Updated: ${new Date(n.updatedAt).toLocaleDateString()}</div>
+                </div>
+            `).join('');
+
+            // Attach auto-save listeners
+            list.querySelectorAll('.note-title-input').forEach(input => {
+                input.addEventListener('input', (e) => updateNote(e.target.dataset.id, 'title', e.target.value));
+            });
+            list.querySelectorAll('.note-content').forEach(textarea => {
+                textarea.addEventListener('input', (e) => updateNote(e.target.dataset.id, 'content', e.target.value));
+            });
+        };
+
+        const renderNotes = () => {
+            renderNotesList('notes-list');
+        };
+
+        const updateNote = (id, field, value) => {
+            const note = state.notes.find(n => n.id === id);
+            if(note) {
+                note[field] = value;
+                note.updatedAt = new Date().toISOString();
+                saveState('notes', state.notes);
+            }
+        };
+
+        window.confirmDeleteNote = (id, btn) => {
+            const og = btn.innerHTML;
+            btn.innerHTML = 'Sure?';
+            btn.style.width = 'auto';
+            btn.style.color = 'var(--danger)';
+            btn.onclick = () => {
+                saveState('notes', state.notes.filter(n => n.id !== id));
+                if(currentScreen === 'screen-notes') renderNotes();
+                if(currentScreen === 'screen-main') renderMain();
+            };
+            setTimeout(() => {
+                if(document.body.contains(btn)) {
+                    btn.innerHTML = og;
+                    btn.style.color = '';
+                    btn.onclick = () => confirmDeleteNote(id, btn);
+                }
+            }, 3000);
+        };
+
+        // --- Mental Health Logic ---
+        const mentalAdvice = [
+            { category: 'focus', title: "Can't focus", steps: ["Put phone face down in another room", "Set a 10 min timer", "Start the absolute smallest part of the task"] },
+            { category: 'focus', title: "Keep getting distracted", steps: ["Close all tabs except what you need right now", "Write down what you're doing on a sticky note", "Look only at the sticky note when you lose track"] },
+            { category: 'anxiety', title: "Feeling overwhelmed", steps: ["Do a brain dump: write down everything on your mind", "Pick ONE thing that would make today a win", "Forgive yourself for not doing the rest today"] },
+            { category: 'anxiety', title: "Heart racing / panic", steps: ["Breathe in for 4 seconds", "Hold for 4 seconds", "Exhale for 6 seconds", "Repeat 4 times"] },
+            { category: 'overthinking', title: "Stuck deciding", steps: ["Flip a coin for the decision", "If you're disappointed by the result, choose the other option", "Otherwise, stick with the coin toss"] },
+            { category: 'overthinking', title: "Worrying about a mistake", steps: ["Will this matter in 5 years?", "If no: Let it go, everyone makes mistakes", "If yes: Write down one action you can take right now to fix it"] },
+            { category: 'energy', title: "Completely exhausted", steps: ["Drink a full glass of water", "Step outside for 2 minutes of fresh air", "If still exhausted, set a 20 min nap timer"] },
+            { category: 'energy', title: "Brain fog", steps: ["Stand up and stretch for 60 seconds", "Eat a small, healthy snack (not sugar)", "Switch to a low-effort mechanical task for 15 mins"] }
+        ];
+
+        let currentMentalFilter = 'all';
+
+        const renderMental = () => {
+            const list = document.getElementById('mental-list');
+            const filtered = currentMentalFilter === 'all' 
+                ? mentalAdvice 
+                : mentalAdvice.filter(a => a.category === currentMentalFilter);
+            
+            list.innerHTML = filtered.map(item => `
+                <div class="mental-card">
+                    <h3 class="mb-12">${item.title}</h3>
+                    <div class="flex-col">
+                        ${item.steps.map((step, i) => `
+                            <div class="mental-step">
+                                <div class="step-num">${i + 1}</div>
+                                <div style="padding-top: 2px;">${step}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        document.querySelectorAll('#mental-filters .pill-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#mental-filters .pill-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMentalFilter = btn.dataset.filter;
+                renderMental();
+            });
+        });
+
+        // --- Bottom Sheet & Add Logic ---
+        const addSheet = document.getElementById('add-sheet');
+        const addBackdrop = document.getElementById('add-sheet-backdrop');
+        const tabTask = document.getElementById('tab-task');
+        const tabReminder = document.getElementById('tab-reminder');
+        const formTask = document.getElementById('form-task');
+        const formReminder = document.getElementById('form-reminder');
+
+        fab.addEventListener('click', () => {
+            addSheet.classList.add('open');
+            addBackdrop.classList.add('open');
+        });
+
+        addBackdrop.addEventListener('click', () => {
+            addSheet.classList.remove('open');
+            addBackdrop.classList.remove('open');
+        });
+
+        tabTask.addEventListener('click', () => {
+            tabTask.classList.add('active'); tabTask.style.color = '';
+            tabReminder.classList.remove('active'); tabReminder.style.color = 'var(--text-muted)';
+            formTask.classList.remove('hidden'); formReminder.classList.add('hidden');
+        });
+        
+        tabReminder.addEventListener('click', () => {
+            tabReminder.classList.add('active'); tabReminder.style.color = '';
+            tabTask.classList.remove('active'); tabTask.style.color = 'var(--text-muted)';
+            formReminder.classList.remove('hidden'); formTask.classList.add('hidden');
+        });
+
+        let selectedTaskTime = 30;
+        document.querySelectorAll('#add-task-time-pills .pill-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#add-task-time-pills .pill-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedTaskTime = parseInt(btn.dataset.val);
+            });
+        });
+
+        document.getElementById('btn-submit-task').addEventListener('click', () => {
+            const name = document.getElementById('add-task-name').value.trim();
+            if(!name) return;
+            const task = {
+                id: 't_' + Date.now(),
+                name,
+                subject: document.getElementById('add-task-subject').value.trim(),
+                deadline: document.getElementById('add-task-date').value,
+                estimatedMins: selectedTaskTime,
+                done: false,
+                doneAt: null,
+                createdAt: new Date().toISOString()
+            };
+            saveState('tasks', [...state.tasks, task]);
+            
+            document.getElementById('add-task-name').value = '';
+            addSheet.classList.remove('open'); addBackdrop.classList.remove('open');
+            if(currentScreen === 'screen-main') renderMain();
+            if(currentScreen === 'screen-tasks') renderTasks();
+        });
+
+        let selectedEmoji = '💡';
+        document.querySelectorAll('.emoji-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedEmoji = btn.textContent;
+            });
+        });
+
+        document.getElementById('btn-submit-reminder').addEventListener('click', () => {
+            const text = document.getElementById('add-reminder-text').value.trim();
+            if(!text) return;
+            const time = document.getElementById('add-reminder-time').value;
+            
+            if(time && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+
+            const reminder = {
+                id: 'r_' + Date.now(),
+                emoji: selectedEmoji,
+                text,
+                time,
+                notified: false
+            };
+            saveState('reminders', [...state.reminders, reminder]);
+            
+            document.getElementById('add-reminder-text').value = '';
+            document.getElementById('add-reminder-time').value = '';
+            addSheet.classList.remove('open'); addBackdrop.classList.remove('open');
+            if(currentScreen === 'screen-main') renderMain();
+            if(currentScreen === 'screen-reminders') renderReminders();
+        });
+
+        document.querySelectorAll('.quick-add-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const parts = chip.textContent.split(' ');
+                const emoji = parts[0];
+                const text = parts.slice(1).join(' ');
+                saveState('reminders', [...state.reminders, { id: 'r_' + Date.now(), emoji, text, time: '', notified: false }]);
+                renderReminders();
+                if(currentScreen === 'screen-main') renderMain();
+            });
+        });
+
+
+        // --- Focus Mode ---
+        let focusTimerInterval;
+        let focusTimeRemaining = 25 * 60;
+        let currentFocusTaskId = null;
+        let isFocusActive = false;
+
+        window.startFocus = (taskId) => {
+            currentFocusTaskId = taskId;
+            const task = state.tasks.find(t => t.id === taskId);
+            document.getElementById('focus-task-name').textContent = task ? task.name : 'Focus Session';
+            focusTimeRemaining = 25 * 60;
+            updateFocusTimerDisplay();
+            isFocusActive = true;
+            showScreen('screen-focus');
+            
+            clearInterval(focusTimerInterval);
+            focusTimerInterval = setInterval(() => {
+                if(focusTimeRemaining > 0) {
+                    focusTimeRemaining--;
+                    updateFocusTimerDisplay();
+                } else {
+                    clearInterval(focusTimerInterval);
+                    // Timer done logic
+                    isFocusActive = false;
+                }
+            }, 1000);
+        };
+
+        const updateFocusTimerDisplay = () => {
+            const m = Math.floor(focusTimeRemaining / 60).toString().padStart(2, '0');
+            const s = (focusTimeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('focus-timer').textContent = `${m}:${s}`;
+        };
+
+        document.getElementById('btn-focus-done').addEventListener('click', () => {
+            clearInterval(focusTimerInterval);
+            isFocusActive = false;
+            if(currentFocusTaskId) toggleTask(currentFocusTaskId);
+            
+            // Win animation
+            const conf = document.createElement('div');
+            conf.className = 'confetti';
+            conf.textContent = '🎉';
+            document.body.appendChild(conf);
+            setTimeout(() => conf.remove(), 1000);
+
+            setTimeout(() => {
+                showScreen('screen-main');
+            }, 1200);
+        });
+
+        document.getElementById('btn-focus-break').addEventListener('click', () => {
+            clearInterval(focusTimerInterval);
+            isFocusActive = false;
+            showScreen('screen-breathe');
+            startBreatheAnimation();
+        });
+
+        // Distraction Detection
+        document.addEventListener('visibilitychange', () => {
+            if(document.visibilityState === 'hidden' && isFocusActive) {
+                const task = state.tasks.find(t => t.id === currentFocusTaskId);
+                document.getElementById('distraction-task-name').textContent = task ? task.name : 'Task';
+                document.getElementById('overlay-distraction').classList.remove('hidden');
+                clearInterval(focusTimerInterval);
+            }
+        });
+
+        document.getElementById('btn-distraction-back').addEventListener('click', () => {
+            document.getElementById('overlay-distraction').classList.add('hidden');
+            focusTimerInterval = setInterval(() => {
+                if(focusTimeRemaining > 0) {
+                    focusTimeRemaining--;
+                    updateFocusTimerDisplay();
+                }
+            }, 1000);
+        });
+        
+        document.getElementById('btn-distraction-done').addEventListener('click', () => {
+            document.getElementById('overlay-distraction').classList.add('hidden');
+            document.getElementById('btn-focus-done').click();
+        });
+
+
+        // --- Breathing ---
+        let breathePhase = 0; // 0: in (4s), 1: hold (7s), 2: out (8s)
+        let breatheCycles = 0;
+        let breatheTimeout;
+
+        const startBreatheAnimation = () => {
+            breatheCycles = 0;
+            breathePhase = 0;
+            runBreatheCycle();
+        };
+
+        const runBreatheCycle = () => {
+            const circle = document.getElementById('breathe-circle');
+            if(breathePhase === 0) {
+                circle.textContent = 'Breathe in...';
+                circle.style.transition = 'transform 4s linear';
+                circle.style.transform = 'scale(1.5)';
+                breatheTimeout = setTimeout(() => { breathePhase = 1; runBreatheCycle(); }, 4000);
+            } else if(breathePhase === 1) {
+                circle.textContent = 'Hold...';
+                circle.style.transition = 'transform 7s linear';
+                breatheTimeout = setTimeout(() => { breathePhase = 2; runBreatheCycle(); }, 7000);
+            } else if(breathePhase === 2) {
+                circle.textContent = 'Breathe out...';
+                circle.style.transition = 'transform 8s linear';
+                circle.style.transform = 'scale(1)';
+                breatheTimeout = setTimeout(() => { 
+                    breathePhase = 0; 
+                    breatheCycles++;
+                    if(breatheCycles < 2) runBreatheCycle();
+                    else {
+                        circle.textContent = 'Done.';
+                    }
+                }, 8000);
+            }
+        };
+
+        document.getElementById('btn-breathe-back').addEventListener('click', () => {
+            clearTimeout(breatheTimeout);
+            showScreen('screen-focus');
+            isFocusActive = true;
+            focusTimerInterval = setInterval(() => {
+                if(focusTimeRemaining > 0) {
+                    focusTimeRemaining--;
+                    updateFocusTimerDisplay();
+                }
+            }, 1000);
+        });
+
+
+        // --- Overlays (Evening & Nudge) ---
+        const checkEveningReflection = () => {
+            const now = new Date();
+            if(now.getHours() >= 20) {
+                const today = getTodayStr();
+                const done = state.reflections.some(r => r.date === today);
+                if(!done) {
+                    setTimeout(showEveningReflection, 2000);
+                }
+            }
+        };
+
+        const showEveningReflection = () => {
+            const overlay = document.getElementById('overlay-evening');
+            const content = document.getElementById('evening-content');
+            
+            let phase = 1;
+            let answers = { date: getTodayStr() };
+
+            const renderPhase = () => {
+                if(phase === 1) {
+                    content.innerHTML = `
+                        <h2 class="mb-24">How did today actually go?</h2>
+                        <p class="mb-16">How did the day play out?</p>
+                        <button class="big-tap ev-opt" data-val="Smooth ✨">Smooth ✨</button>
+                        <button class="big-tap ev-opt" data-val="Bumpy 🤕">Bumpy 🤕</button>
+                        <button class="big-tap ev-opt" data-val="Mixed 🎢">Mixed 🎢</button>
+                        <button class="big-tap ev-opt" data-val="Survival mode 🛡️">Survival mode 🛡️</button>
+                    `;
+                } else if(phase === 2) {
+                    content.innerHTML = `
+                        <h2 class="mb-24">How did today actually go?</h2>
+                        <p class="mb-16">Did you do the thing you meant to?</p>
+                        <button class="big-tap ev-opt" data-val="Yep, mostly ✅">Yep, mostly ✅</button>
+                        <button class="big-tap ev-opt" data-val="Some of it 🔄">Some of it 🔄</button>
+                        <button class="big-tap ev-opt" data-val="Not really 🌊">Not really 🌊</button>
+                        <button class="big-tap ev-opt" data-val="Life happened 😅">Life happened 😅</button>
+                    `;
+                } else if(phase === 3) {
+                    content.innerHTML = `
+                        <h2 class="mb-24">Tomorrow</h2>
+                        <p class="mb-16">What's the first thing tomorrow should start with?</p>
+                        <input type="text" id="ev-tomorrow" placeholder="Even one word is fine." autocomplete="off">
+                        <button id="ev-next">Next</button>
+                    `;
+                    document.getElementById('ev-next').onclick = () => {
+                        answers.tomorrowFirst = document.getElementById('ev-tomorrow').value;
+                        phase = 4; renderPhase();
+                    };
+                } else if(phase === 4) {
+                    const incomplete = state.tasks.filter(t => !t.done).sort((a,b) => new Date(a.deadline||'2099') - new Date(b.deadline||'2099'));
+                    const firstTask = incomplete.length > 0 ? incomplete[0].name : 'Nothing urgent right now.';
+                    content.innerHTML = `
+                        <h2 class="mb-24">Got it.</h2>
+                        <p class="mb-24">Here's your first task for tomorrow: <strong>${firstTask}</strong></p>
+                        <button id="ev-close">Close</button>
+                    `;
+                    document.getElementById('ev-close').onclick = () => {
+                        saveState('reflections', [...state.reflections, answers]);
+                        overlay.classList.add('hidden');
+                    };
+                }
+
+                document.querySelectorAll('.ev-opt').forEach(btn => {
+                    btn.onclick = (e) => {
+                        if(phase === 1) answers.howItWent = e.target.dataset.val;
+                        if(phase === 2) answers.onTrack = e.target.dataset.val;
+                        phase++; renderPhase();
+                    };
+                });
+            };
+
+            renderPhase();
+            overlay.classList.remove('hidden');
+        };
+
+        const nudges = [
+            "💧 Grab some water before the next one.",
+            "🪟 Look at something far away for 20 seconds. Your eyes need it.",
+            "🧍 You've been sitting a while. Stand up, shake it out.",
+            "🌬️ Three slow breaths. In through the nose, long out through the mouth.",
+            "🎉 You actually finished that. That counts.",
+            "🫀 Are your shoulders near your ears? Let them drop.",
+            "📵 Notifications off for the next one?",
+            "🌡️ Is the room okay? Discomfort quietly kills focus.",
+            "⏰ Still roughly on track today? 30-second check.",
+            "🍎 When did you last eat? Low fuel = foggy thinking.",
+            "☀️ Is there natural light where you are? Move if not.",
+            "📋 Is the next task clear enough to start immediately? If not, spend 2 min clarifying it before starting."
+        ];
+
+        let nudgeTimeout;
+        const showNudge = () => {
+            const nudge = nudges[Math.floor(Math.random() * nudges.length)];
+            document.getElementById('nudge-text').textContent = nudge.substring(2).trim();
+            document.getElementById('nudge-icon').textContent = nudge.substring(0,2).trim();
+            
+            const card = document.getElementById('nudge-card');
+            card.classList.remove('hidden');
+            
+            clearTimeout(nudgeTimeout);
+            nudgeTimeout = setTimeout(() => {
+                card.classList.add('hidden');
+            }, 6000);
+        };
+        document.getElementById('nudge-card').addEventListener('click', () => {
+            document.getElementById('nudge-card').classList.add('hidden');
+        });
+
+        // Inactivity Tracker
+        let inactivityTimer;
+        const resetInactivityTimer = () => {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if(['screen-main', 'screen-tasks', 'screen-reminders'].includes(currentScreen)) {
+                    showNudge();
+                }
+            }, 2 * 60 * 60 * 1000); // 2 hours
+        };
+        ['click', 'touchstart', 'mousemove', 'keydown'].forEach(evt => 
+            document.addEventListener(evt, resetInactivityTimer)
+        );
+        resetInactivityTimer();
+
+
+        // --- Notification Logic ---
+        setInterval(() => {
+            if(Notification.permission === 'granted') {
+                const now = new Date();
+                const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+                
+                let changed = false;
+                state.reminders.forEach(r => {
+                    if(r.time === hhmm && !r.notified) {
+                        new Notification(r.text, { icon: '⏰' });
+                        r.notified = true;
+                        changed = true;
+                    }
+                });
+                if(changed) {
+                    saveState('reminders', state.reminders);
+                    if(currentScreen === 'screen-main') renderMain();
+                }
+            }
+        }, 60000);
+
+        // --- Init Flow ---
+        const init = () => {
+            isFocusActive = false;
+            document.getElementById('overlay-distraction').classList.add('hidden');
+            
+            if(!state.user) {
+                showScreen('screen-login');
+            } else if(!state.user.pinHash) {
+                showScreen('screen-pin-setup');
+            } else {
+                document.getElementById('entry-greeting').textContent = `Hey ${state.user.username}.`;
+                showScreen('screen-pin-entry');
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>
