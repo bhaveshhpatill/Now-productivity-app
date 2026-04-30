@@ -819,21 +819,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             });
         };
 
-       const checkCheckin = () => {
-            const today = getTodayStr();
-            const doneToday = state.checkins.some(c => c.date === today);
-
-            if (!doneToday) {
-                checkinStep = 0;
-                checkinAnswers = {};
-                showScreen('screen-checkin');
-                renderCheckinStep();
-            } else {
-                showDailyAdvice(); // added
-                showScreen('screen-main');
-                checkEveningReflection();
-            }
-        };
+       
 
         // --- Smart Task Selection Logic ---
         let currentSuggestedTaskIndex = 0;
