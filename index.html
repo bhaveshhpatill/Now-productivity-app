@@ -462,29 +462,50 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 <h1>Notes Vault</h1>
                 <button class="pill-btn active" id="btn-new-note" style="width:auto; min-height:auto;">+ New</button>
             </div>
-            <p class="small text-secondary mb-24">Dump everything important here. Auto-saved.</p>
+            <p class="small text-secondary mb-16">Dump everything important here. Auto-saved.</p>
             
+            <input type="text" id="notes-search-input" placeholder="Search notes..." autocomplete="off" style="margin-bottom: 24px;">
+
             <div id="notes-list" class="flex-col gap-12">
                 <!-- Injected via JS -->
             </div>
         </div>
 
-        <!-- Screen: Mental Health -->
-        <div id="screen-mental" class="screen hidden">
-            <h1 class="mb-8">Mental Check</h1>
-            <p class="small text-secondary mb-24">Practical, actionable steps for when you're stuck.</p>
+        <!-- Screen: Focus Tools -->
+        <div id="screen-focus-tools" class="screen hidden">
+            <h1 class="mb-8">Focus Reset</h1>
+            <p class="small text-secondary mb-24">Mini tools to help you reset your mind.</p>
             
-            <div class="flex gap-8 mb-24" style="flex-wrap: wrap;" id="mental-filters">
-                <div class="pill-btn active" data-filter="all">All</div>
-                <div class="pill-btn" data-filter="focus">Focus</div>
-                <div class="pill-btn" data-filter="anxiety">Anxiety</div>
-                <div class="pill-btn" data-filter="overthinking">Overthinking</div>
-                <div class="pill-btn" data-filter="energy">Low Energy</div>
+            <div class="flex-col gap-16">
+                <div class="card" style="cursor: pointer;" onclick="startFocusTool('breathe')">
+                    <h3 class="mb-8">🌬️ Breathing Reset</h3>
+                    <p class="small text-secondary">A 60-second guided breathing exercise to calm your nervous system.</p>
+                </div>
+                
+                <div class="card" style="cursor: pointer;" onclick="startFocusTool('react')">
+                    <h3 class="mb-8">🎯 Reaction Tap</h3>
+                    <p class="small text-secondary">A quick 10-round tapping game to reset your attention.</p>
+                </div>
             </div>
+        </div>
 
-            <div id="mental-list" class="flex-col gap-16">
-                <!-- Injected via JS -->
+        <!-- Screen: Focus Tool - Breathe -->
+        <div id="screen-tool-breathe" class="screen flex-col items-center justify-center hidden" style="background-color: var(--card-bg);">
+            <div class="breathe-circle" id="tool-breathe-circle">Ready?</div>
+            <p class="small text-secondary mt-24" id="tool-breathe-text">Starting in 3...</p>
+            <button class="secondary mt-auto" id="btn-tool-breathe-back" style="max-width: 200px;">Cancel</button>
+        </div>
+
+        <!-- Screen: Focus Tool - React -->
+        <div id="screen-tool-react" class="screen hidden" style="background-color: var(--card-bg); position: relative;">
+            <p class="text-center mt-24 text-secondary" id="tool-react-counter">Round 1/10</p>
+            <div id="tool-react-dot" style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--accent); position: absolute; display: none; cursor: pointer;"></div>
+            <div id="tool-react-done" class="hidden flex-col items-center justify-center" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                <h2 class="mb-16">Done.</h2>
+                <p class="mb-24 text-secondary">You're ready. Go back.</p>
+                <button id="btn-tool-react-back" style="max-width: 200px;">Back</button>
             </div>
+            <button class="text mt-auto" id="btn-tool-react-cancel" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: auto; min-height: auto;">Cancel</button>
         </div>
 
         <!-- Bottom Nav -->
@@ -493,7 +514,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <div class="nav-item" data-target="screen-tasks"><span style="font-size: 20px;">✓</span><span>Tasks</span></div>
             <div class="nav-item" data-target="screen-reminders"><span style="font-size: 20px;">🔔</span><span>Reminders</span></div>
             <div class="nav-item" data-target="screen-notes"><span style="font-size: 20px;">📝</span><span>Notes</span></div>
-            <div class="nav-item" data-target="screen-mental"><span style="font-size: 20px;">🧠</span><span>Mental</span></div>
+            <div class="nav-item" data-target="screen-focus-tools"><span style="font-size: 20px;">🎯</span><span>Focus</span></div>
         </nav>
 
         <!-- Floating Action Button -->
@@ -600,7 +621,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 target.scrollTop = 0;
             }
             
-            const navVisible = ['screen-main', 'screen-tasks', 'screen-reminders', 'screen-notes', 'screen-mental'].includes(screenId);
+            const navVisible = ['screen-main', 'screen-tasks', 'screen-reminders', 'screen-notes', 'screen-focus-tools'].includes(screenId);
             if(navVisible) {
                 bottomNav.classList.remove('hidden');
                 fab.classList.remove('hidden');
@@ -616,7 +637,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             if(screenId === 'screen-tasks') renderTasks();
             if(screenId === 'screen-reminders') renderReminders();
             if(screenId === 'screen-notes') renderNotes();
-            if(screenId === 'screen-mental') renderMental();
         };
 
         document.querySelectorAll('.nav-item').forEach(nav => {
@@ -845,9 +865,14 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                         <h1>Notes Vault</h1>
                         <button class="pill-btn active" id="btn-new-note-desktop" style="width:auto; min-height:auto;">+ New</button>
                     </div>
+                    <input type="text" id="notes-search-input-desktop" placeholder="Search notes..." autocomplete="off" style="margin-bottom: 24px;">
                     <div id="notes-list-desktop" class="flex-col gap-12"></div>
                 `;
                 document.getElementById('btn-new-note-desktop').addEventListener('click', createNewNote);
+                document.getElementById('notes-search-input-desktop').addEventListener('input', (e) => {
+                    currentNoteSearchQuery = e.target.value;
+                    renderNotesList('notes-list-desktop');
+                });
                 renderNotesList('notes-list-desktop');
             }
         };
@@ -972,6 +997,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         };
 
         // --- Notes Logic ---
+        let currentNoteSearchQuery = '';
+
         const createNewNote = () => {
             const newNote = {
                 id: 'n_' + Date.now(),
@@ -986,17 +1013,35 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         };
 
         document.getElementById('btn-new-note').addEventListener('click', createNewNote);
+        document.getElementById('notes-search-input').addEventListener('input', (e) => {
+            currentNoteSearchQuery = e.target.value;
+            renderNotes();
+        });
 
         const renderNotesList = (containerId) => {
             const list = document.getElementById(containerId);
             if(!list) return;
             
-            if(state.notes.length === 0) {
-                list.innerHTML = `<p class="text-center text-muted mt-24">No notes yet. Start dumping.</p>`;
+            let displayNotes = [...state.notes];
+            
+            // Apply Search
+            if (currentNoteSearchQuery.trim()) {
+                const query = currentNoteSearchQuery.toLowerCase();
+                displayNotes = displayNotes.filter(n => 
+                    (n.title && n.title.toLowerCase().includes(query)) || 
+                    (n.content && n.content.toLowerCase().includes(query))
+                );
+            }
+
+            // Sort by updated at (newest first)
+            displayNotes.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+            
+            if(displayNotes.length === 0) {
+                list.innerHTML = `<p class="text-center text-muted mt-24">${state.notes.length === 0 ? 'No notes yet. Start dumping.' : 'No notes match your search.'}</p>`;
                 return;
             }
 
-            list.innerHTML = state.notes.map(n => `
+            list.innerHTML = displayNotes.map(n => `
                 <div class="card" style="padding: 16px;">
                     <div class="flex justify-between items-center mb-8">
                         <input type="text" class="note-title-input" value="${n.title}" data-id="${n.id}" placeholder="Note Title">
@@ -1048,49 +1093,133 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }, 3000);
         };
 
-        // --- Mental Health Logic ---
-        const mentalAdvice = [
-            { category: 'focus', title: "Can't focus", steps: ["Put phone face down in another room", "Set a 10 min timer", "Start the absolute smallest part of the task"] },
-            { category: 'focus', title: "Keep getting distracted", steps: ["Close all tabs except what you need right now", "Write down what you're doing on a sticky note", "Look only at the sticky note when you lose track"] },
-            { category: 'anxiety', title: "Feeling overwhelmed", steps: ["Do a brain dump: write down everything on your mind", "Pick ONE thing that would make today a win", "Forgive yourself for not doing the rest today"] },
-            { category: 'anxiety', title: "Heart racing / panic", steps: ["Breathe in for 4 seconds", "Hold for 4 seconds", "Exhale for 6 seconds", "Repeat 4 times"] },
-            { category: 'overthinking', title: "Stuck deciding", steps: ["Flip a coin for the decision", "If you're disappointed by the result, choose the other option", "Otherwise, stick with the coin toss"] },
-            { category: 'overthinking', title: "Worrying about a mistake", steps: ["Will this matter in 5 years?", "If no: Let it go, everyone makes mistakes", "If yes: Write down one action you can take right now to fix it"] },
-            { category: 'energy', title: "Completely exhausted", steps: ["Drink a full glass of water", "Step outside for 2 minutes of fresh air", "If still exhausted, set a 20 min nap timer"] },
-            { category: 'energy', title: "Brain fog", steps: ["Stand up and stretch for 60 seconds", "Eat a small, healthy snack (not sugar)", "Switch to a low-effort mechanical task for 15 mins"] }
-        ];
-
-        let currentMentalFilter = 'all';
-
-        const renderMental = () => {
-            const list = document.getElementById('mental-list');
-            const filtered = currentMentalFilter === 'all' 
-                ? mentalAdvice 
-                : mentalAdvice.filter(a => a.category === currentMentalFilter);
-            
-            list.innerHTML = filtered.map(item => `
-                <div class="mental-card">
-                    <h3 class="mb-12">${item.title}</h3>
-                    <div class="flex-col">
-                        ${item.steps.map((step, i) => `
-                            <div class="mental-step">
-                                <div class="step-num">${i + 1}</div>
-                                <div style="padding-top: 2px;">${step}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
+        // --- Focus Tools Logic ---
+        window.startFocusTool = (tool) => {
+            if (tool === 'breathe') {
+                showScreen('screen-tool-breathe');
+                startToolBreathe();
+            } else if (tool === 'react') {
+                showScreen('screen-tool-react');
+                startToolReact();
+            }
         };
 
-        document.querySelectorAll('#mental-filters .pill-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#mental-filters .pill-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentMentalFilter = btn.dataset.filter;
-                renderMental();
-            });
-        });
+        // Breathe Tool
+        let toolBreathePhase = 0; // 0: wait, 1: in (4s), 2: hold (2s), 3: out (6s)
+        let toolBreatheCycles = 0;
+        let toolBreatheTimeout;
+
+        const startToolBreathe = () => {
+            toolBreatheCycles = 0;
+            toolBreathePhase = 0;
+            const circle = document.getElementById('tool-breathe-circle');
+            const text = document.getElementById('tool-breathe-text');
+            circle.style.transform = 'scale(1)';
+            circle.textContent = 'Ready?';
+            text.textContent = 'Starting in 3...';
+            
+            let countdown = 3;
+            const countInt = setInterval(() => {
+                countdown--;
+                if (countdown > 0) text.textContent = `Starting in ${countdown}...`;
+                else {
+                    clearInterval(countInt);
+                    text.textContent = '';
+                    toolBreathePhase = 1;
+                    runToolBreatheCycle();
+                }
+            }, 1000);
+
+            document.getElementById('btn-tool-breathe-back').onclick = () => {
+                clearInterval(countInt);
+                clearTimeout(toolBreatheTimeout);
+                showScreen('screen-focus-tools');
+            };
+        };
+
+        const runToolBreatheCycle = () => {
+            const circle = document.getElementById('tool-breathe-circle');
+            if(toolBreathePhase === 1) {
+                circle.textContent = 'Breathe in...';
+                circle.style.transition = 'transform 4s linear';
+                circle.style.transform = 'scale(1.8)';
+                toolBreatheTimeout = setTimeout(() => { toolBreathePhase = 2; runToolBreatheCycle(); }, 4000);
+            } else if(toolBreathePhase === 2) {
+                circle.textContent = 'Hold...';
+                circle.style.transition = 'transform 2s linear';
+                toolBreatheTimeout = setTimeout(() => { toolBreathePhase = 3; runToolBreatheCycle(); }, 2000);
+            } else if(toolBreathePhase === 3) {
+                circle.textContent = 'Breathe out...';
+                circle.style.transition = 'transform 6s linear';
+                circle.style.transform = 'scale(1)';
+                toolBreatheTimeout = setTimeout(() => { 
+                    toolBreathePhase = 1; 
+                    toolBreatheCycles++;
+                    if(toolBreatheCycles < 3) runToolBreatheCycle();
+                    else {
+                        circle.textContent = "You're ready.";
+                        document.getElementById('btn-tool-breathe-back').textContent = "Go back";
+                    }
+                }, 6000);
+            }
+        };
+
+        // React Tool
+        let reactRound = 0;
+        let reactTimeout;
+
+        const startToolReact = () => {
+            reactRound = 0;
+            document.getElementById('tool-react-done').classList.add('hidden');
+            document.getElementById('tool-react-counter').classList.remove('hidden');
+            document.getElementById('tool-react-dot').style.display = 'none';
+            document.getElementById('btn-tool-react-cancel').classList.remove('hidden');
+            
+            document.getElementById('btn-tool-react-cancel').onclick = () => {
+                clearTimeout(reactTimeout);
+                showScreen('screen-focus-tools');
+            };
+            
+            nextReactRound();
+        };
+
+        const nextReactRound = () => {
+            if (reactRound >= 10) {
+                document.getElementById('tool-react-dot').style.display = 'none';
+                document.getElementById('tool-react-counter').classList.add('hidden');
+                document.getElementById('btn-tool-react-cancel').classList.add('hidden');
+                document.getElementById('tool-react-done').classList.remove('hidden');
+                
+                document.getElementById('btn-tool-react-back').onclick = () => {
+                    showScreen('screen-focus-tools');
+                };
+                return;
+            }
+
+            reactRound++;
+            document.getElementById('tool-react-counter').textContent = `Round ${reactRound}/10`;
+            document.getElementById('tool-react-dot').style.display = 'none';
+
+            const delay = Math.random() * 1500 + 500; // 500ms - 2000ms delay
+            
+            reactTimeout = setTimeout(() => {
+                const dot = document.getElementById('tool-react-dot');
+                
+                // Calculate safe random bounds (avoiding edges and nav)
+                const safeX = Math.max(20, Math.random() * (window.innerWidth > 440 ? 400 : window.innerWidth - 68));
+                const safeY = Math.max(80, Math.random() * (window.innerHeight - 200));
+                
+                dot.style.left = `${safeX}px`;
+                dot.style.top = `${safeY}px`;
+                dot.style.display = 'block';
+                
+                dot.onclick = () => {
+                    dot.style.display = 'none';
+                    dot.onclick = null;
+                    nextReactRound();
+                };
+            }, delay);
+        };
 
         // --- Bottom Sheet & Add Logic ---
         const addSheet = document.getElementById('add-sheet');
@@ -1466,7 +1595,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 let changed = false;
                 state.reminders.forEach(r => {
                     if(r.time === hhmm && !r.notified) {
-                        new Notification(r.text, { icon: '⏰' });
+                        new Notification("Task reminder", { body: r.text, icon: '⏰' });
                         r.notified = true;
                         changed = true;
                     }
