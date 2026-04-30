@@ -305,6 +305,42 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             animation: dissolveText 2s forwards;
         }
         
+        /* Focus Tools Enhancements */
+        .bubble-ripple {
+            position: absolute;
+            border: 2px solid rgba(91, 82, 232, 0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: rippleEffect 0.6s ease-out forwards;
+        }
+        @keyframes rippleEffect {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        #zen-canvas {
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        /* Study Boost Styles */
+        .study-boost-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-card);
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 360px;
+        }
+
+        /* Feedback Animation */
+        @keyframes feedbackPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .feedback-pop { animation: feedbackPop 0.3s ease-out; }
+
         /* Desktop Optimization */
         @media (min-width: 900px) {
             #app-container {
@@ -528,6 +564,21 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     <h3 class="mb-8">✍️ Release Tool</h3>
                     <p class="small text-secondary">Dump what's in your head, then destroy it. Pure emotional release.</p>
                 </div>
+
+                <div class="card" style="cursor: pointer;" onclick="startFocusTool('study')">
+                    <h3 class="mb-8">📚 Study Boost</h3>
+                    <p class="small text-secondary">Quick conceptual recall to reinforce what you're learning.</p>
+                </div>
+
+                <div class="card" style="cursor: pointer;" onclick="startFocusTool('react')">
+                    <h3 class="mb-8">🎯 Reaction Tap</h3>
+                    <p class="small text-secondary">Quick attention reset with a fast-paced tapping game.</p>
+                </div>
+
+                <div class="card" style="cursor: pointer;" onclick="startFocusTool('zen')">
+                    <h3 class="mb-8">🎨 Zen Canvas</h3>
+                    <p class="small text-secondary">Free-form drawing with fading lines for pure mental flow.</p>
+                </div>
             </div>
         </div>
 
@@ -560,11 +611,59 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             </div>
             
             <div id="tool-release-done" class="hidden flex-col items-center justify-center flex-grow">
-                <h2 class="mb-16">Let it go.</h2>
+                <h2 class="mb-16" id="release-quote-title">Let it go.</h2>
+                <p class="text-secondary text-center mb-24" id="release-quote-text"></p>
                 <button class="secondary mt-24" id="btn-tool-release-back" style="max-width: 200px;">Back</button>
             </div>
 
             <button class="text mt-auto" id="btn-tool-release-cancel" style="width: auto; min-height: auto; align-self: center;">Cancel</button>
+        </div>
+
+        <!-- Screen: Focus Tool - Study Boost -->
+        <div id="screen-tool-study" class="screen flex-col items-center justify-center hidden" style="background-color: var(--card-bg);">
+            <div id="study-setup" class="study-boost-card flex-col">
+                <h2 class="mb-16">Study Boost</h2>
+                <p class="small mb-16">Reinforce your learning with quick recall.</p>
+                <input type="text" id="study-topic" placeholder="What are you studying?">
+                <textarea id="study-notes" class="note-content" placeholder="Key points (optional)"></textarea>
+                <button id="btn-study-start">Start</button>
+            </div>
+
+            <div id="study-flow" class="hidden study-boost-card flex-col items-center">
+                <p class="small mb-24" id="study-flow-topic" style="text-transform: uppercase; letter-spacing: 1px;"></p>
+                <h2 class="text-center mb-32" id="study-question"></h2>
+                <button id="btn-study-next">Next</button>
+            </div>
+
+            <div id="study-done" class="hidden study-boost-card flex-col items-center">
+                <h2 class="mb-16">Good.</h2>
+                <p class="text-center text-secondary mb-24">You understand this. Move forward.</p>
+                <button id="btn-study-back">Back</button>
+            </div>
+
+            <button class="text mt-32" id="btn-study-cancel" style="width: auto; min-height: auto;">Cancel</button>
+        </div>
+
+        <!-- Screen: Focus Tool - Reaction Tap -->
+        <div id="screen-tool-react" class="screen hidden" style="background-color: var(--card-bg); position: relative;">
+            <p class="text-center mt-24 text-secondary" id="tool-react-counter">Round 1/10</p>
+            <div id="tool-react-dot" style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--accent); position: absolute; display: none; cursor: pointer; transition: transform 0.1s;"></div>
+            <div id="tool-react-done" class="hidden flex-col items-center justify-center" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                <h2 class="mb-16">Done.</h2>
+                <p class="mb-24 text-secondary">Focus reset complete.</p>
+                <button id="btn-tool-react-back" style="max-width: 200px;">Back</button>
+            </div>
+            <button class="text mt-auto" id="btn-tool-react-cancel" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: auto; min-height: auto;">Cancel</button>
+        </div>
+
+        <!-- Screen: Focus Tool - Zen Canvas -->
+        <div id="screen-tool-zen" class="screen hidden" style="background-color: #fff; padding: 0; overflow: hidden;">
+            <canvas id="zen-canvas" style="width: 100%; height: 100%;"></canvas>
+            <div style="position: absolute; top: 24px; left: 0; width: 100%; pointer-events: none;" class="flex-col items-center">
+                <h2 style="color: var(--text-muted); opacity: 0.5;">Zen Canvas</h2>
+                <p class="small" style="opacity: 0.5;">Draw freely. Watch it fade.</p>
+            </div>
+            <button class="text" id="btn-tool-zen-back" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: auto; min-height: auto; color: var(--text-muted);">Back</button>
         </div>
 
         <!-- Bottom Nav -->
@@ -893,15 +992,20 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     ${nowTasks.length > 1 ? `<button class="text text-white small" onclick="cycleTask()" style="width:auto;margin:0 auto;min-height:auto;">Not this — show something else</button>` : ''}
                 `;
             } else {
-                card.innerHTML = `<p class="text-center text-white">Nothing added yet — tap + to add your first task</p>`;
+                card.innerHTML = `
+                    <div class="flex-col items-center">
+                        <p class="text-center text-white mb-16">Nothing added yet — tap + to add your first task</p>
+                        <p class="small text-white" style="opacity: 0.7;">"The secret of getting ahead is getting started."</p>
+                    </div>
+                `;
             }
 
             // Today's Tasks
             const tasksList = document.getElementById('main-tasks-list');
             const incomplete = state.tasks.filter(t => !t.done).sort((a,b) => new Date(a.deadline||'2099') - new Date(b.deadline||'2099'));
             tasksList.innerHTML = incomplete.map(t => `
-                <div class="task-row">
-                    <div class="checkbox" onclick="toggleTask('${t.id}')"></div>
+                <div class="task-row ${currentFocusTaskId === t.id && isFocusActive ? 'active-focus' : ''}" style="${currentFocusTaskId === t.id && isFocusActive ? 'border-color: var(--accent);' : ''}">
+                    <div class="checkbox" onclick="toggleTask('${t.id}', this.parentElement)"></div>
                     <div style="flex-grow:1; overflow:hidden;">
                         <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</div>
                         ${t.deadline ? `<div class="small mt-4">Due: ${t.deadline}</div>` : ''}
@@ -910,7 +1014,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             `).join('');
 
             // Reminders Strip
-            const rems = state.reminders.filter(r => !r.notified).slice(0,3);
+            const rems = state.reminders.filter(r => !r.notified).sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99')).slice(0,3);
             const remsList = document.getElementById('main-reminders-list');
             remsList.innerHTML = rems.map(r => `
                 <div class="reminder-chip" onclick="dismissReminder('${r.id}')">${r.emoji} ${r.text} ${r.time ? `· ${r.time}` : ''}</div>
@@ -925,8 +1029,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                         <h1>Notes Vault</h1>
                         <button class="pill-btn active" id="btn-new-note-desktop" style="width:auto; min-height:auto;">+ New</button>
                     </div>
-                    <input type="text" id="notes-search-input-desktop" placeholder="Search notes..." autocomplete="off" style="margin-bottom: 24px;">
-                    <div id="notes-list-desktop" class="flex-col gap-12"></div>
+                    <input type="text" id="notes-search-input-desktop" placeholder="Search notes..." autocomplete="off" style="margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.05); padding: 12px 16px;">
+                    <div id="notes-list-desktop" class="flex-col gap-12" style="padding-right: 8px;"></div>
                 `;
                 document.getElementById('btn-new-note-desktop').addEventListener('click', createNewNote);
                 document.getElementById('notes-search-input-desktop').addEventListener('input', (e) => {
@@ -955,8 +1059,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }
 
             list.innerHTML = sorted.map(t => `
-                <div class="task-row ${t.done ? 'done' : ''}">
-                    <div class="checkbox" onclick="toggleTask('${t.id}')"></div>
+                <div class="task-row ${t.done ? 'done' : ''} ${currentFocusTaskId === t.id && isFocusActive ? 'active-focus' : ''}" style="${currentFocusTaskId === t.id && isFocusActive ? 'border-color: var(--accent);' : ''}">
+                    <div class="checkbox" onclick="toggleTask('${t.id}', this.parentElement)"></div>
                     <div style="flex-grow:1; overflow:hidden;">
                         <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</div>
                         <div class="flex gap-8 mt-4">
@@ -972,12 +1076,13 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         const renderReminders = () => {
             const list = document.getElementById('reminders-list');
-            if(state.reminders.length === 0) {
+            const sortedRems = [...state.reminders].sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+            if(sortedRems.length === 0) {
                 list.innerHTML = `<p class="text-center text-muted mt-24">No reminders active.</p>`;
                 return;
             }
-            list.innerHTML = state.reminders.map(r => `
-                <div class="task-row">
+            list.innerHTML = sortedRems.map(r => `
+                <div class="task-row ${r.notified ? 'done' : ''}">
                     <div style="font-size:24px;">${r.emoji}</div>
                     <div style="flex-grow:1;">
                         <div>${r.text}</div>
@@ -989,7 +1094,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         };
 
         // --- Task Actions ---
-        window.toggleTask = (id) => {
+        window.toggleTask = (id, el) => {
             const task = state.tasks.find(t => t.id === id);
             if(task) {
                 task.done = !task.done;
@@ -997,6 +1102,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 saveState('tasks', state.tasks);
                 
                 if(task.done) {
+                    if (el) el.classList.add('feedback-pop');
                     const today = getTodayStr();
                     if(state.streak.lastDate !== today) {
                         saveState('streak', { current: state.streak.current + 1, lastDate: today });
@@ -1282,6 +1388,15 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             } else if (tool === 'release') {
                 showScreen('screen-tool-release');
                 startToolRelease();
+            } else if (tool === 'study') {
+                showScreen('screen-tool-study');
+                startToolStudy();
+            } else if (tool === 'react') {
+                showScreen('screen-tool-react');
+                startToolReact();
+            } else if (tool === 'zen') {
+                showScreen('screen-tool-zen');
+                startToolZen();
             }
         };
 
@@ -1381,7 +1496,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             bubble.style.left = `${safeX}px`;
             bubble.style.top = `${safeY}px`;
             
-            bubble.onclick = () => {
+            bubble.onclick = (e) => {
+                createRipple(e.clientX, e.clientY);
                 bubble.classList.add('popped');
                 bubblePops++;
                 setTimeout(() => bubble.remove(), 300);
@@ -1397,6 +1513,17 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     setTimeout(() => bubble.remove(), 200);
                 }
             }, 3000);
+        };
+
+        const createRipple = (x, y) => {
+            const ripple = document.createElement('div');
+            ripple.className = 'bubble-ripple';
+            ripple.style.left = `${x - 25}px`;
+            ripple.style.top = `${y - 25}px`;
+            ripple.style.width = '50px';
+            ripple.style.height = '50px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
         };
 
         const stopToolBubble = () => {
@@ -1427,6 +1554,15 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             
             document.getElementById('btn-tool-release-cancel').onclick = () => showScreen('screen-focus-tools');
             
+            const releaseQuotes = [
+                "Let it go.",
+                "You’re doing better than you think.",
+                "This moment will pass.",
+                "You’re in control.",
+                "Breathe in peace, exhale tension.",
+                "You are enough."
+            ];
+
             document.getElementById('btn-tool-release').onclick = () => {
                 if(!textarea.value.trim()) return;
                 
@@ -1438,10 +1574,186 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     document.getElementById('tool-release-done').classList.remove('hidden');
                     document.getElementById('btn-tool-release-cancel').classList.add('hidden');
                     document.getElementById('btn-tool-release').style.display = 'flex'; // reset
+                    
+                    const quote = releaseQuotes[Math.floor(Math.random() * releaseQuotes.length)];
+                    document.getElementById('release-quote-text').textContent = quote;
                 }, 2000);
             };
             
             document.getElementById('btn-tool-release-back').onclick = () => showScreen('screen-focus-tools');
+        };
+
+        // Study Boost Tool
+        let studyQuestions = [];
+        let studyIndex = 0;
+
+        const startToolStudy = () => {
+            document.getElementById('study-setup').classList.remove('hidden');
+            document.getElementById('study-flow').classList.add('hidden');
+            document.getElementById('study-done').classList.add('hidden');
+            document.getElementById('study-topic').value = '';
+            document.getElementById('study-notes').value = '';
+
+            document.getElementById('btn-study-cancel').onclick = () => showScreen('screen-focus-tools');
+            document.getElementById('btn-study-back').onclick = () => showScreen('screen-focus-tools');
+
+            document.getElementById('btn-study-start').onclick = () => {
+                const topic = document.getElementById('study-topic').value.trim();
+                if (!topic) return;
+
+                studyQuestions = [
+                    `What is the most fundamental concept of ${topic}?`,
+                    `How would you explain ${topic} to a friend in one sentence?`,
+                    `What is one thing about ${topic} you want to remember tomorrow?`
+                ];
+                studyIndex = 0;
+                document.getElementById('study-flow-topic').textContent = topic;
+                document.getElementById('study-setup').classList.add('hidden');
+                document.getElementById('study-flow').classList.remove('hidden');
+                renderStudyQuestion();
+            };
+
+            document.getElementById('btn-study-next').onclick = () => {
+                studyIndex++;
+                if (studyIndex < studyQuestions.length) {
+                    renderStudyQuestion();
+                } else {
+                    document.getElementById('study-flow').classList.add('hidden');
+                    document.getElementById('study-done').classList.remove('hidden');
+                }
+            };
+        };
+
+        const renderStudyQuestion = () => {
+            document.getElementById('study-question').textContent = studyQuestions[studyIndex];
+        };
+
+        // React Tool
+        let reactRound = 0;
+        let reactTimeout;
+
+        const startToolReact = () => {
+            reactRound = 0;
+            document.getElementById('tool-react-done').classList.add('hidden');
+            document.getElementById('tool-react-counter').classList.remove('hidden');
+            document.getElementById('tool-react-dot').style.display = 'none';
+            document.getElementById('btn-tool-react-cancel').classList.remove('hidden');
+            
+            document.getElementById('btn-tool-react-cancel').onclick = () => {
+                clearTimeout(reactTimeout);
+                showScreen('screen-focus-tools');
+            };
+            
+            nextReactRound();
+        };
+
+        const nextReactRound = () => {
+            if (reactRound >= 10) {
+                document.getElementById('tool-react-dot').style.display = 'none';
+                document.getElementById('tool-react-counter').classList.add('hidden');
+                document.getElementById('btn-tool-react-cancel').classList.add('hidden');
+                document.getElementById('tool-react-done').classList.remove('hidden');
+                
+                document.getElementById('btn-tool-react-back').onclick = () => {
+                    showScreen('screen-focus-tools');
+                };
+                return;
+            }
+
+            reactRound++;
+            document.getElementById('tool-react-counter').textContent = `Round ${reactRound}/10`;
+            document.getElementById('tool-react-dot').style.display = 'none';
+
+            const delay = Math.random() * 1500 + 500;
+            
+            reactTimeout = setTimeout(() => {
+                const dot = document.getElementById('tool-react-dot');
+                const safeX = Math.max(20, Math.random() * (window.innerWidth > 440 ? 400 : window.innerWidth - 68));
+                const safeY = Math.max(80, Math.random() * (window.innerHeight - 200));
+                
+                dot.style.left = `${safeX}px`;
+                dot.style.top = `${safeY}px`;
+                dot.style.display = 'block';
+                dot.style.transform = 'scale(0)';
+                setTimeout(() => dot.style.transform = 'scale(1)', 10);
+                
+                dot.onclick = () => {
+                    dot.style.display = 'none';
+                    dot.onclick = null;
+                    nextReactRound();
+                };
+            }, delay);
+        };
+
+        // Zen Canvas Tool
+        const startToolZen = () => {
+            const canvas = document.getElementById('zen-canvas');
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+            let lines = [];
+
+            const resize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+
+            const startDraw = (e) => { drawing = true; addPoint(e); };
+            const endDraw = () => { drawing = false; };
+            const draw = (e) => { if (drawing) addPoint(e); };
+
+            const addPoint = (e) => {
+                const pos = getPos(e);
+                lines.push({ x: pos.x, y: pos.y, age: 0 });
+            };
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', endDraw);
+            canvas.addEventListener('touchstart', startDraw);
+            canvas.addEventListener('touchmove', draw);
+            window.addEventListener('touchend', endDraw);
+
+            const animate = () => {
+                if (currentScreen !== 'screen-tool-zen') return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = 4;
+
+                for (let i = 1; i < lines.length; i++) {
+                    const p1 = lines[i-1];
+                    const p2 = lines[i];
+                    const alpha = Math.max(0, 1 - p2.age / 100);
+                    ctx.strokeStyle = `rgba(91, 82, 232, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+
+                lines.forEach(p => p.age++);
+                lines = lines.filter(p => p.age < 100);
+
+                requestAnimationFrame(animate);
+            };
+            animate();
+
+            document.getElementById('btn-tool-zen-back').onclick = () => {
+                window.removeEventListener('resize', resize);
+                window.removeEventListener('mouseup', endDraw);
+                window.removeEventListener('touchend', endDraw);
+                showScreen('screen-focus-tools');
+            };
         };
 
         // --- Bottom Sheet & Add Logic ---
