@@ -1,12 +1,25 @@
-document.addEventListener("DOMContentLoaded", () => {
+console.log("APP JS LOADED");
+
+try {
+    if (!window.supabase) {
+        throw new Error("Supabase CDN not loaded");
+    }
+
     const SUPABASE_URL = "https://unucqhtoegwylmwsrnrt.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_QnqXD-mlp83KAmLg3b73Jg_XiZIryX2";
 
     const { createClient } = window.supabase;
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    console.log("Supabase connected:", supabase);
-});
+    window.supabaseClient = supabase;
+
+    console.log("✅ Supabase connected:", supabase);
+
+} catch (err) {
+    console.error("❌ INIT FAILED:", err);
+}
+
+
         // --- Global Interaction System ---
         const InteractionSystem = {
             init() {
@@ -743,7 +756,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const runToolBreatheCycle = (phase, cycles) => {
             const circle = document.getElementById('tool-breathe-circle');
-            if (circles >= 3) { circle.textContent = "You're ready."; document.getElementById('btn-tool-breathe-back').textContent = "Go back"; return; }
+            if (cycles >= 3) { circle.textContent = "You're ready."; document.getElementById('btn-tool-breathe-back').textContent = "Go back"; return; }
             if(phase === 1) {
                 circle.textContent = 'Breathe in...';
                 circle.style.transition = 'transform 4s linear';
@@ -1341,4 +1354,4 @@ document.addEventListener("DOMContentLoaded", () => {
         document.head.appendChild(style);
 
         init();
-    });
+    
