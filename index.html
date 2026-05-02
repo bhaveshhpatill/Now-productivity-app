@@ -19,23 +19,27 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #F9F7F3;
-            --card-bg: #ffffff;
-            --accent: #5B52E8;
-            --accent-soft: #EEEDFE;
-            --text-primary: #1C1B1A;
-            --text-secondary: #6B6860;
-            --text-muted: #A8A49D;
-            --success: #16A34A;
-            --success-bg: #DCFCE7;
-            --warn: #D97706;
-            --warn-bg: #FEF3C7;
-            --danger: #DC2626;
-            --danger-bg: #FEE2E2;
-            --radius-card: 16px;
-            --radius-input: 10px;
+            --bg: #F0F2F5;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --accent: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-soft: rgba(99, 102, 241, 0.1);
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --warn: #f59e0b;
+            --warn-bg: #fffbeb;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --radius-card: 24px;
+            --radius-input: 16px;
             --radius-pill: 50px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.08);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
         }
 
         * {
@@ -43,38 +47,42 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
             font-family: 'DM Sans', sans-serif;
-            background-color: #e5e5e5;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             color: var(--text-primary);
             line-height: 1.5;
             display: flex;
             justify-content: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         h1, h2, .font-serif {
             font-family: 'DM Serif Display', serif;
+            letter-spacing: -0.02em;
         }
 
-        h1 { font-size: 28px; }
-        h2 { font-size: 21px; }
-        h3 { font-size: 17px; font-weight: 600; }
-        p { font-size: 15px; }
-        .small { font-size: 13px; }
+        h1 { font-size: 32px; }
+        h2 { font-size: 24px; }
+        h3 { font-size: 18px; font-weight: 600; }
+        p { font-size: 16px; }
+        .small { font-size: 14px; }
 
         #app-container {
             width: 100%;
             max-width: 440px;
             position: relative;
             min-height: 100vh;
-            background-color: var(--bg);
+            background: var(--bg);
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            transition: max-width 0.3s ease;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .screen {
@@ -85,10 +93,12 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             height: 100%;
             padding: 24px;
             overflow-y: auto;
-            padding-bottom: 100px;
-            transition: opacity 280ms ease, transform 280ms ease;
+            padding-bottom: 110px;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
+            opacity: 1;
+            transform: scale(1);
         }
 
         .hidden {
@@ -97,7 +107,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         .screen.hidden {
             opacity: 0;
-            transform: translateY(20px);
+            transform: scale(0.96) translateY(10px);
             pointer-events: none;
             display: none !important;
         }
@@ -105,40 +115,85 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         .card {
             background-color: var(--card-bg);
             border-radius: var(--radius-card);
-            padding: 20px;
-            border: 1px solid rgba(0,0,0,0.08);
+            padding: 24px;
+            border: 1px solid var(--glass-border);
             box-shadow: var(--shadow);
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .gradient-card {
-            background: linear-gradient(135deg, var(--accent) 0%, #7C74F2 100%);
+            background: var(--accent-gradient);
             color: white;
             border: none;
+            box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.3);
         }
 
         button {
-            background-color: var(--accent);
+            background: var(--accent-gradient);
             color: white;
             border: none;
             border-radius: var(--radius-pill);
-            padding: 12px 24px;
-            font-size: 15px;
+            padding: 14px 28px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, filter 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
-            min-height: 48px;
+            min-height: 54px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
         }
 
-        button:active { transform: scale(0.98); filter: brightness(1.1); }
-        button.secondary { background-color: var(--accent-soft); color: var(--accent); }
-        button.white { background-color: white; color: var(--text-primary); }
-        button.text { background: transparent; color: var(--text-secondary); width: auto; padding: 8px; min-height: auto; }
-        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+            filter: brightness(1.05);
+        }
+
+        button:active {
+            transform: scale(0.97);
+            filter: brightness(0.95);
+        }
+
+        button.secondary {
+            background: var(--accent-soft);
+            color: var(--accent);
+            box-shadow: none;
+        }
+
+        button.white {
+            background: white;
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        button.text {
+            background: transparent;
+            color: var(--text-secondary);
+            width: auto;
+            padding: 8px 16px;
+            min-height: auto;
+            box-shadow: none;
+        }
+
+        button.text:hover {
+            background: var(--accent-soft);
+            color: var(--accent);
+            transform: none;
+        }
+
         .icon-btn {
             width: 40px;
             height: 40px;
@@ -196,56 +251,69 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         .numpad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            gap: 20px;
             width: 100%;
-            max-width: 280px;
+            max-width: 300px;
         }
         .numpad-btn {
-            height: 64px;
+            height: 72px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 500;
             background: white;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.02);
         }
-        .numpad-btn:active { background: var(--accent-soft); }
+        .numpad-btn:hover {
+            transform: scale(1.05);
+            background: var(--bg);
+        }
+        .numpad-btn:active {
+            transform: scale(0.95);
+            background: var(--accent-soft);
+        }
 
-        .progress-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; }
-        .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-soft); }
-        .progress-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+        .progress-dots { display: flex; gap: 10px; justify-content: center; margin-bottom: 32px; }
+        .progress-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-soft); transition: all 0.3s ease; }
+        .progress-dot.active { background: var(--accent); width: 28px; border-radius: 5px; }
 
         .big-tap {
-            padding: 24px;
+            padding: 28px;
             text-align: left;
             justify-content: flex-start;
-            font-size: 17px;
-            margin-bottom: 12px;
+            font-size: 18px;
+            margin-bottom: 16px;
             background: white;
             color: var(--text-primary);
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border-radius: var(--radius-card);
         }
 
         #bottom-nav {
             position: fixed;
-            bottom: 0;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 100%;
-            max-width: 440px;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            width: calc(100% - 40px);
+            max-width: 400px;
+            height: 76px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 38px;
             z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 0 10px;
         }
         .nav-item {
             display: flex;
@@ -253,13 +321,24 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             align-items: center;
             gap: 4px;
             color: var(--text-muted);
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             flex: 1;
-            padding: 8px 0;
+            padding: 10px 0;
+            transition: all 0.3s ease;
+            border-radius: 20px;
         }
-        .nav-item.active { color: var(--accent); }
+        .nav-item.active {
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+        .nav-item span:first-child {
+            transition: transform 0.3s ease;
+        }
+        .nav-item.active span:first-child {
+            transform: translateY(-2px) scale(1.1);
+        }
 
         .streak-badge {
             background: var(--accent-soft);
@@ -282,64 +361,86 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         .task-row {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 16px;
+            gap: 16px;
+            padding: 20px;
             background: white;
             border-radius: var(--radius-card);
-            border: 1px solid rgba(0,0,0,0.05);
-            margin-bottom: 8px;
+            border: 1px solid rgba(0,0,0,0.03);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
         }
-        .task-row.done { opacity: 0.5; }
-        .task-row.done div { text-decoration: line-through; }
+        .task-row:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+        }
+        .task-row.done { opacity: 0.6; transform: scale(0.98); }
+        .task-row.done div { text-decoration: line-through; color: var(--text-muted); }
         .checkbox {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
             border: 2px solid var(--accent-soft);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .checkbox.checked { background: var(--accent); border-color: var(--accent); }
-        .checkbox.checked::after { content: '✓'; color: white; font-size: 14px; }
+        .checkbox.checked { background: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+        .checkbox.checked::after { content: '✓'; color: white; font-size: 16px; font-weight: bold; }
 
         .reminders-strip {
             display: flex;
             gap: 12px;
             overflow-x: auto;
-            padding-bottom: 8px;
+            padding: 8px 4px 16px 4px;
             scrollbar-width: none;
         }
         .reminders-strip::-webkit-scrollbar { display: none; }
         .reminder-chip {
             background: white;
-            padding: 10px 16px;
+            padding: 12px 20px;
             border-radius: var(--radius-pill);
-            border: 1px solid rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.03);
             white-space: nowrap;
             font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+        .reminder-chip:hover {
+            transform: translateY(-2px);
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-color: var(--accent);
         }
 
         #fab-add {
             position: fixed;
-            bottom: 85px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--accent);
+            bottom: 110px;
+            right: 24px;
+            width: 64px;
+            height: 64px;
+            border-radius: 32px;
+            background: var(--accent-gradient);
             color: white;
-            font-size: 32px;
+            font-size: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(91, 82, 232, 0.4);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
             cursor: pointer;
             z-index: 90;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        #fab-add:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+        }
+        #fab-add:active { transform: scale(0.9); }
 
         .overlay {
             position: fixed;
@@ -347,33 +448,38 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.4);
+            background: rgba(15, 23, 42, 0.4);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 24px;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.4s ease;
         }
 
         .breathe-circle {
-            width: 200px;
-            height: 200px;
+            width: 220px;
+            height: 220px;
             border-radius: 50%;
             background: var(--accent-soft);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 21px;
+            font-size: 24px;
             color: var(--accent);
             font-weight: 600;
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
+            border: 4px solid white;
         }
 
-        .shake { animation: shake 0.4s ease-in-out; }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
 
         .bottom-sheet {
@@ -384,13 +490,39 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             width: 100%;
             max-width: 440px;
             background: white;
-            border-radius: 24px 24px 0 0;
-            padding: 24px;
+            border-radius: 32px 32px 0 0;
+            padding: 32px 24px;
             z-index: 200;
-            transition: transform 0.3s ease-out;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -20px 40px rgba(0,0,0,0.1);
         }
         .bottom-sheet.open { transform: translateX(-50%) translateY(0); }
+
+        /* Global Ripple & Particle Effects */
+        .g-ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.15);
+            transform: scale(0);
+            pointer-events: none;
+            z-index: 9999;
+            animation: g-ripple-anim 0.6s ease-out forwards;
+        }
+        @keyframes g-ripple-anim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            border-radius: 50%;
+            animation: particle-anim 0.8s ease-out forwards;
+        }
+        @keyframes particle-anim {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
 
         .pill-btn {
             background: var(--bg);
@@ -503,21 +635,26 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             #app-container {
                 max-width: 1000px;
                 flex-direction: row;
-                box-shadow: 0 0 40px rgba(0,0,0,0.05);
+                box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+                border-radius: 32px;
+                margin: 40px 0;
+                height: calc(100vh - 80px);
+                min-height: auto;
             }
             
             #bottom-nav {
                 max-width: 1000px;
+                bottom: 40px;
             }
             
             .screen {
-                padding: 40px;
+                padding: 48px;
             }
             
             #screen-main {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 40px;
+                grid-template-columns: 1.2fr 1fr;
+                gap: 48px;
                 align-content: start;
             }
 
@@ -530,7 +667,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 display: flex;
                 flex-direction: column;
                 border-left: 1px solid rgba(0,0,0,0.05);
-                padding-left: 40px;
+                padding-left: 48px;
             }
             
             .main-right-col .header { display: none; }
@@ -540,7 +677,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 justify-content: center;
             }
             
-            .card.w-full { max-width: 400px; margin: 0 auto; }
+            .card.w-full { max-width: 440px; margin: 0 auto; }
             #checkin-container { max-width: 500px; margin: 0 auto; width: 100%; justify-content: center; }
         }
     </style>
@@ -896,6 +1033,52 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
     </div>
 
     <script>
+        // --- Global Interaction System ---
+        const InteractionSystem = {
+            init() {
+                document.addEventListener('click', (e) => {
+                    this.createRipple(e.clientX, e.clientY);
+                    if (e.target.closest('button') || e.target.closest('.numpad-btn') || e.target.closest('.checkbox')) {
+                        this.createParticles(e.clientX, e.clientY);
+                    }
+                });
+            },
+            createRipple(x, y) {
+                const ripple = document.createElement('div');
+                ripple.className = 'g-ripple';
+                const size = 100;
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x - size / 2}px`;
+                ripple.style.top = `${y - size / 2}px`;
+                document.body.appendChild(ripple);
+                ripple.onanimationend = () => ripple.remove();
+            },
+            createParticles(x, y) {
+                const colors = ['#6366f1', '#a855f7', '#818cf8', '#c084fc'];
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    const size = Math.random() * 6 + 4;
+                    particle.style.width = particle.style.height = `${size}px`;
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const velocity = Math.random() * 60 + 40;
+                    const dx = Math.cos(angle) * velocity;
+                    const dy = Math.sin(angle) * velocity;
+                    
+                    particle.style.setProperty('--dx', `${dx}px`);
+                    particle.style.setProperty('--dy', `${dy}px`);
+                    
+                    document.body.appendChild(particle);
+                    particle.onanimationend = () => particle.remove();
+                }
+            }
+        };
+        InteractionSystem.init();
+
         // --- Auth Storage Helpers ---
         function getUser() { return localStorage.getItem("now_user"); }
         function setUser(user) { localStorage.setItem("now_user", user); }
@@ -934,11 +1117,26 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         let currentScreen = '';
 
         const showScreen = (screenId) => {
+            const oldScreen = currentScreen;
             currentScreen = screenId;
-            screens.forEach(s => s.classList.add('hidden'));
+            
+            // Fade out current screen if exists
+            if (oldScreen && oldScreen !== screenId) {
+                const oldEl = document.getElementById(oldScreen);
+                if (oldEl) {
+                    oldEl.style.opacity = '0';
+                    oldEl.style.transform = 'scale(0.96) translateY(10px)';
+                    setTimeout(() => oldEl.classList.add('hidden'), 400);
+                }
+            }
+
             const target = document.getElementById(screenId);
             if(target) {
                 target.classList.remove('hidden');
+                // Force reflow
+                target.offsetHeight;
+                target.style.opacity = '1';
+                target.style.transform = 'scale(1) translateY(0)';
                 target.scrollTop = 0;
             }
             
@@ -1157,27 +1355,38 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
             const nowTasks = getNowTasks();
             const card = document.getElementById('main-task-card');
-            if(nowTasks.length > 0) {
-                if(currentSuggestedTaskIndex >= nowTasks.length) currentSuggestedTaskIndex = 0;
-                const task = nowTasks[currentSuggestedTaskIndex];
-                card.innerHTML = `
-                    <p class="small mb-8" style="opacity:0.8;color:white;">${task.contextMsg}</p>
-                    <h2 class="mb-16 font-serif" style="color:white;">${task.name}</h2>
-                    <div class="flex gap-8 mb-24">
-                        ${task.subject ? `<span class="badge" style="background:rgba(255,255,255,0.2);color:white;">${task.subject}</span>` : ''}
-                        <span class="badge" style="background:rgba(255,255,255,0.2);color:white;">~${task.estimatedMins}m</span>
-                    </div>
-                    <button class="white mb-12" onclick="startFocus('${task.id}')" style="color:var(--accent);">Start focus</button>
-                    ${nowTasks.length > 1 ? `<button class="text small" onclick="cycleTask()" style="width:auto;margin:0 auto;min-height:auto;color:rgba(255,255,255,0.8);">Not this — show something else</button>` : ''}
-                `;
-            } else {
-                card.innerHTML = `
-                    <div class="flex-col items-center">
-                        <p class="text-center mb-16" style="color:white;">Nothing added yet — tap + to add your first task</p>
-                        <p class="small" style="color:white;opacity: 0.7;">"The secret of getting ahead is getting started."</p>
-                    </div>
-                `;
-            }
+            
+            // Add a small fade-in animation for the suggestion card
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                if(nowTasks.length > 0) {
+                    if(currentSuggestedTaskIndex >= nowTasks.length) currentSuggestedTaskIndex = 0;
+                    const task = nowTasks[currentSuggestedTaskIndex];
+                    card.innerHTML = `
+                        <p class="small mb-12" style="opacity:0.9;color:white;font-weight:500;">${task.contextMsg}</p>
+                        <h2 class="mb-20 font-serif" style="color:white;font-size:28px;">${task.name}</h2>
+                        <div class="flex gap-12 mb-28">
+                            ${task.subject ? `<span class="badge" style="background:rgba(255,255,255,0.25);color:white;backdrop-filter:blur(4px);">${task.subject}</span>` : ''}
+                            <span class="badge" style="background:rgba(255,255,255,0.25);color:white;backdrop-filter:blur(4px);">~${task.estimatedMins}m</span>
+                        </div>
+                        <button class="white mb-16" onclick="startFocus('${task.id}')" style="color:var(--accent);font-weight:700;">Start focus session</button>
+                        ${nowTasks.length > 1 ? `<button class="text small" onclick="cycleTask()" style="width:auto;margin:0 auto;min-height:auto;color:rgba(255,255,255,0.9);font-weight:500;">Show me something else</button>` : ''}
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="flex-col items-center py-8">
+                            <div style="font-size:40px;margin-bottom:16px;">✨</div>
+                            <p class="text-center mb-12" style="color:white;font-weight:600;font-size:18px;">All clear for now</p>
+                            <p class="small text-center" style="color:white;opacity: 0.8;max-width:240px;">"The secret of getting ahead is getting started."</p>
+                        </div>
+                    `;
+                }
+                card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
 
             const tasksList = document.getElementById('main-tasks-list');
             const incomplete = state.tasks.filter(t => !t.done).sort((a,b) => new Date(a.deadline||'2099') - new Date(b.deadline||'2099'));
@@ -1606,18 +1815,22 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             const runCycle = () => {
                 if (cycles >= 3) {
                     circle.textContent = "You're ready.";
+                    circle.style.background = 'var(--success-bg)';
+                    circle.style.color = 'var(--success)';
+                    circle.style.borderColor = 'var(--success)';
                     document.getElementById('btn-tool-breathe-back').textContent = "Go back";
                     return;
                 }
                 phase = 1;
                 circle.textContent = 'Breathe in...';
-                circle.style.transition = 'transform 4s linear';
-                circle.style.transform = 'scale(1.8)';
+                circle.style.transition = 'all 4s cubic-bezier(0.4, 0, 0.2, 1)';
+                circle.style.transform = 'scale(1.5)';
+                circle.style.background = 'var(--accent-soft)';
                 toolBreatheTimeout = setTimeout(() => {
                     circle.textContent = 'Hold...';
                     toolBreatheTimeout = setTimeout(() => {
                         circle.textContent = 'Breathe out...';
-                        circle.style.transition = 'transform 6s linear';
+                        circle.style.transition = 'all 6s cubic-bezier(0.4, 0, 0.2, 1)';
                         circle.style.transform = 'scale(1)';
                         toolBreatheTimeout = setTimeout(() => {
                             cycles++;
@@ -1662,33 +1875,38 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             const container = document.getElementById('bubble-container');
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
-            const size = Math.random() * 30 + 30;
+            const size = Math.random() * 40 + 40;
             bubble.style.width = `${size}px`;
             bubble.style.height = `${size}px`;
             bubble.style.left = `${Math.random() * (container.clientWidth - size)}px`;
-            bubble.style.top = `${Math.random() * (container.clientHeight - size - 80)}px`;
+            bubble.style.top = `${Math.random() * (container.clientHeight - size - 100)}px`;
+            
+            // Add floating animation
+            const duration = Math.random() * 2 + 3;
+            bubble.style.transition = `transform ${duration}s ease-in-out, opacity 0.3s ease`;
+            
             bubble.onclick = (e) => {
-                createRipple(e.clientX, e.clientY);
+                InteractionSystem.createRipple(e.clientX, e.clientY);
+                InteractionSystem.createParticles(e.clientX, e.clientY);
                 bubble.classList.add('popped');
                 bubblePops++;
                 setTimeout(() => bubble.remove(), 300);
                 if (bubblePops >= 15) endToolBubble();
             };
+            
             container.appendChild(bubble);
+            
+            // Initial float
+            requestAnimationFrame(() => {
+                bubble.style.transform = `translate(${Math.random() * 20 - 10}px, ${-Math.random() * 40 - 20}px)`;
+            });
+
             setTimeout(() => {
                 if (container.contains(bubble) && !bubble.classList.contains('popped')) {
                     bubble.style.opacity = '0';
-                    setTimeout(() => bubble.remove(), 200);
+                    setTimeout(() => bubble.remove(), 300);
                 }
-            }, 3000);
-        };
-
-        const createRipple = (x, y) => {
-            const ripple = document.createElement('div');
-            ripple.className = 'bubble-ripple';
-            ripple.style.cssText = `left:${x-25}px;top:${y-25}px;width:50px;height:50px;position:fixed;`;
-            document.body.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
+            }, 4000);
         };
 
         const stopToolBubble = () => { clearTimeout(bubbleTimer); clearInterval(bubbleInterval); showScreen('screen-focus-tools'); };
@@ -1831,7 +2049,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 for (let i = 1; i < lines.length; i++) {
                     if (lines[i].start) continue;
                     const alpha = Math.max(0, 1 - lines[i].age / 100);
-                    ctx.strokeStyle = `rgba(91,82,232,${alpha})`;
+                    // Use premium purple/blue gradient colors for the zen canvas lines
+                    ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
                     ctx.beginPath();
                     ctx.moveTo(lines[i-1].x, lines[i-1].y);
                     ctx.lineTo(lines[i].x, lines[i].y);
