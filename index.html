@@ -878,7 +878,14 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         const SUPABASE_URL = "https://zgptpjaonkrowjitba.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_QOe3_erVAaW7Ond8pAH0bA_5tzvA8e1";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+       if (!window._supabaseClient) {
+    window._supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
+}
+
+const sb = window._supabaseClient;
 
         // --- Email Storage Helpers ---
         function getUserEmail() {
@@ -974,7 +981,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                         if (!email) return;
                     }
 
-                    const { error } = await supabase.auth.signUp({
+                    const { error } = await sb.auth.signUp({
                         email,
                         password: pinBuffer
                     });
@@ -996,7 +1003,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                         return;
                     }
 
-                    const { error } = await supabase.auth.signInWithPassword({
+                    const { error } = await sb.auth.signInWithPassword({
                         email,
                         password: pinBuffer
                     });
@@ -2220,7 +2227,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         // --- Init Flow ---
         const init = async () => {
-            const { data } = await supabase.auth.getSession();
+            const { data } = await sb.auth.getSession()();
 
             if (data.session) {
                 checkCheckin();
@@ -2235,7 +2242,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         };
 
         document.getElementById('btn-signout').addEventListener('click', async () => {
-            await supabase.auth.signOut();
+            await sb.auth.signOut();
             localStorage.clear();
             location.reload();
         });
