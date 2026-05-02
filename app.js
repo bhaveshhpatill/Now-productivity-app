@@ -1,5 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const SUPABASE_URL = "https://unucqhtoegwylmwsrnrt.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_QnqXD-mlp83KAmLg3b73Jg_XiZIryX2";
 
+    const { createClient } = window.supabase;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    console.log("Supabase connected:", supabase);
+});
         // --- Global Interaction System ---
         const InteractionSystem = {
             init() {
