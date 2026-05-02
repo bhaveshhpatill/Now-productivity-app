@@ -91,11 +91,15 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             flex-direction: column;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         .screen.hidden {
             opacity: 0;
             transform: translateY(20px);
             pointer-events: none;
-            display: none;
+            display: none !important;
         }
 
         .card {
@@ -176,6 +180,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         .mt-16 { margin-top: 16px; }
         .mt-24 { margin-top: 24px; }
         .mt-32 { margin-top: 32px; }
+        .mt-48 { margin-top: 48px; }
         .mt-auto { margin-top: auto; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
@@ -469,6 +474,29 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         .dissolve {
             animation: dissolveText 2s forwards;
         }
+
+        /* Advice Overlay - ensure text is always visible */
+        #overlay-advice {
+            z-index: 2000;
+        }
+        #overlay-advice .advice-card {
+            background: white;
+            border-radius: var(--radius-card);
+            padding: 32px 24px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        #advice-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: 20px;
+            line-height: 1.5;
+            color: var(--accent);
+            margin-bottom: 24px;
+            display: block;
+            min-height: 60px;
+        }
         
         /* Desktop Optimization */
         @media (min-width: 900px) {
@@ -505,10 +533,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 padding-left: 40px;
             }
             
-            /* Hide headers inside columns to prevent duplicates */
             .main-right-col .header { display: none; }
             
-            /* Center auth/focus screens completely */
             #screen-login, #screen-pin-setup, #screen-pin-entry, #screen-checkin, #screen-focus, #screen-breathe {
                 align-items: center;
                 justify-content: center;
@@ -577,7 +603,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         <!-- Screen: Main Dashboard -->
         <div id="screen-main" class="screen hidden">
             <div class="main-left-col">
-                <div class="header">
+                <div class="header flex justify-between items-center mb-16">
                     <h1 id="main-greeting">NOW</h1>
                     <div class="flex items-center gap-12">
                         <div class="streak-badge" id="streak-display">🔥 0</div>
@@ -611,7 +637,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <div style="font-size: 72px; font-weight: 200; margin-bottom: 8px;" id="focus-timer">25:00</div>
             <p class="small mb-48" style="opacity: 0.8; letter-spacing: 2px;">focus session</p>
             <button class="white mb-16" id="btn-focus-done" style="max-width: 200px; color: var(--accent);">Done ✓</button>
-            <button class="text text-white small" id="btn-focus-break" style="width:auto; min-height:auto;">Need a break</button>
+            <button class="text small" id="btn-focus-break" style="width:auto; min-height:auto; color: rgba(255,255,255,0.8);">Need a break</button>
         </div>
 
         <!-- Screen: Breathing Break -->
@@ -654,7 +680,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         <!-- Screen: Notes -->
         <div id="screen-notes" class="screen hidden">
-            <div class="header">
+            <div class="header flex justify-between items-center mb-8">
                 <h1>Notes Vault</h1>
                 <button class="pill-btn active" id="btn-new-note" style="width:auto; min-height:auto;">+ New</button>
             </div>
@@ -733,13 +759,13 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         <!-- Screen: Focus Tool - Release -->
         <div id="screen-tool-release" class="screen flex-col hidden" style="background-color: var(--card-bg);">
-            <div class="flex-col flex-grow" style="justify-content: center;" id="release-container">
+            <div class="flex-col" style="flex-grow:1; justify-content: center;" id="release-container">
                 <h2 class="mb-16 text-center">Dump what's in your head...</h2>
-                <textarea id="release-textarea" class="note-content" style="min-height: 200px; margin-bottom: 24px;" placeholder="Type anything. It won't be saved."></textarea>
+                <textarea id="release-textarea" style="min-height: 200px; margin-bottom: 24px;" placeholder="Type anything. It won't be saved."></textarea>
                 <button id="btn-tool-release" style="max-width: 200px; margin: 0 auto;">Release</button>
             </div>
             
-            <div id="tool-release-done" class="hidden flex-col items-center justify-center flex-grow">
+            <div id="tool-release-done" class="hidden flex-col items-center justify-center" style="flex-grow:1;">
                 <h2 class="mb-16" id="release-quote-title">Let it go.</h2>
                 <p class="text-secondary text-center mb-24" id="release-quote-text"></p>
                 <button class="secondary mt-24" id="btn-tool-release-back" style="max-width: 200px;">Back</button>
@@ -753,8 +779,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <div id="study-setup" class="study-boost-card flex-col">
                 <h2 class="mb-16">Study Boost</h2>
                 <p class="small mb-16">Reinforce your learning with quick recall.</p>
-                <input type="text" id="study-topic" placeholder="What are you studying?">
-                <textarea id="study-notes" class="note-content" placeholder="Key points (optional)"></textarea>
+                <input type="text" id="study-topic" placeholder="What are you studying?" style="margin-bottom:16px;">
+                <textarea id="study-notes" placeholder="Key points (optional)" style="margin-bottom:16px;"></textarea>
                 <button id="btn-study-start">Start</button>
             </div>
 
@@ -782,7 +808,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 <p class="mb-24 text-secondary">Focus reset complete.</p>
                 <button id="btn-tool-react-back" style="max-width: 200px;">Back</button>
             </div>
-            <button class="text mt-auto" id="btn-tool-react-cancel" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: auto; min-height: auto;">Cancel</button>
+            <button class="text" id="btn-tool-react-cancel" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: auto; min-height: auto;">Cancel</button>
         </div>
 
         <!-- Screen: Focus Tool - Zen Canvas -->
@@ -838,9 +864,9 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     <button class="emoji-btn">🔔</button>
                     <button class="emoji-btn">✍️</button>
                 </div>
-                <input type="text" id="add-reminder-text" placeholder="What do you want to remember?" autocomplete="off">
+                <input type="text" id="add-reminder-text" placeholder="What do you want to remember?" autocomplete="off" class="mb-16">
                 <p class="small mb-8">Optional time (for notification)</p>
-                <input type="time" id="add-reminder-time">
+                <input type="time" id="add-reminder-time" class="mb-16">
                 <button id="btn-submit-reminder">Add reminder</button>
             </div>
         </div>
@@ -852,21 +878,17 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             </div>
         </div>
 
-        <div id="overlay-distraction" class="overlay hidden flex-col items-center justify-center text-white" style="background: rgba(91, 82, 232, 0.98);">
+        <div id="overlay-distraction" class="overlay hidden flex-col items-center justify-center" style="background: rgba(91, 82, 232, 0.98); color: white;">
             <p class="mb-16">You were working on:</p>
             <h2 class="mb-24 text-center" id="distraction-task-name">Task Name</h2>
             <button class="white mb-16" id="btn-distraction-back" style="max-width: 200px; color: var(--accent);">Back to it →</button>
-            <button class="text text-white small" id="btn-distraction-done" style="width:auto; min-height:auto;">Or mark as done if you finished.</button>
+            <button class="text small" id="btn-distraction-done" style="width:auto; min-height:auto; color: rgba(255,255,255,0.8);">Or mark as done if you finished.</button>
         </div>
 
-        <div id="nudge-card" class="nudge hidden" style="cursor: pointer;">
-            <div style="font-size: 24px;" id="nudge-icon">💡</div>
-            <div class="small" id="nudge-text" style="flex-grow: 1;">Nudge text</div>
-        </div>
-
-        <div id="overlay-advice" class="overlay hidden flex-col items-center justify-center" style="z-index: 1000; background: rgba(249, 247, 243, 0.9);">
-            <div class="card w-full text-center" style="max-width: 320px; padding: 32px 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                <p class="mb-24 font-serif" id="advice-text" style="font-size: 21px; line-height: 1.4; color: var(--accent);"></p>
+        <!-- FIX: Advice overlay rebuilt with proper structure -->
+        <div id="overlay-advice" class="overlay hidden" style="background: rgba(249,247,243,0.95);">
+            <div class="advice-card">
+                <span id="advice-text"></span>
                 <button id="btn-advice-continue" style="max-width: 160px; margin: 0 auto;">Continue</button>
             </div>
         </div>
@@ -961,6 +983,11 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }
         });
 
+        // Allow Enter key on login
+        document.getElementById('login-username').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('btn-login').click();
+        });
+
         // --- PIN Logic ---
         let pinBuffer = '';
 
@@ -994,7 +1021,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     } else {
                         const dotsContainer = document.getElementById('entry-dots');
                         dotsContainer.classList.add('shake');
-
                         setTimeout(() => {
                             dotsContainer.classList.remove('shake');
                             pinBuffer = '';
@@ -1023,9 +1049,12 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 showScreen('screen-checkin');
                 renderCheckinStep();
             } else {
-                showDailyAdvice();
                 showScreen('screen-main');
-                checkEveningReflection();
+                // FIX: Delay advice overlay so the main screen renders first
+                setTimeout(() => {
+                    showDailyAdvice();
+                    checkEveningReflection();
+                }, 300);
             }
         };
 
@@ -1062,9 +1091,12 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                         checkinAnswers.date = getTodayStr();
                         const newCheckins = [...state.checkins.filter(c => c.date !== getTodayStr()), checkinAnswers];
                         saveState('checkins', newCheckins);
-                        showDailyAdvice();
                         showScreen('screen-main');
-                        checkEveningReflection();
+                        // FIX: Delay advice overlay after checkin completion too
+                        setTimeout(() => {
+                            showDailyAdvice();
+                            checkEveningReflection();
+                        }, 300);
                     }
                 });
             });
@@ -1081,7 +1113,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             let selectedTasks = [...incomplete];
             let contextMsg = "Here's what makes the most sense right now.";
 
-            // Apply rules
             if(todayCheckin.energy === 'very_low' || todayCheckin.mode === 'survival') {
                 selectedTasks.sort((a, b) => a.estimatedMins - b.estimatedMins);
                 contextMsg = "You're running on low today. Picked the quickest thing. Just start there.";
@@ -1115,7 +1146,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         // --- Rendering ---
         const renderMain = () => {
-            // Streak
             const today = getTodayStr();
             if(state.streak.lastDate && state.streak.lastDate !== today) {
                 const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
@@ -1125,32 +1155,30 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }
             document.getElementById('streak-display').textContent = `🔥 ${state.streak.current}`;
 
-            // Smart Task
             const nowTasks = getNowTasks();
             const card = document.getElementById('main-task-card');
             if(nowTasks.length > 0) {
                 if(currentSuggestedTaskIndex >= nowTasks.length) currentSuggestedTaskIndex = 0;
                 const task = nowTasks[currentSuggestedTaskIndex];
                 card.innerHTML = `
-                    <p class="small text-white mb-8" style="opacity:0.8">${task.contextMsg}</p>
-                    <h2 class="mb-16 font-serif">${task.name}</h2>
+                    <p class="small mb-8" style="opacity:0.8;color:white;">${task.contextMsg}</p>
+                    <h2 class="mb-16 font-serif" style="color:white;">${task.name}</h2>
                     <div class="flex gap-8 mb-24">
                         ${task.subject ? `<span class="badge" style="background:rgba(255,255,255,0.2);color:white;">${task.subject}</span>` : ''}
                         <span class="badge" style="background:rgba(255,255,255,0.2);color:white;">~${task.estimatedMins}m</span>
                     </div>
                     <button class="white mb-12" onclick="startFocus('${task.id}')" style="color:var(--accent);">Start focus</button>
-                    ${nowTasks.length > 1 ? `<button class="text text-white small" onclick="cycleTask()" style="width:auto;margin:0 auto;min-height:auto;">Not this — show something else</button>` : ''}
+                    ${nowTasks.length > 1 ? `<button class="text small" onclick="cycleTask()" style="width:auto;margin:0 auto;min-height:auto;color:rgba(255,255,255,0.8);">Not this — show something else</button>` : ''}
                 `;
             } else {
                 card.innerHTML = `
                     <div class="flex-col items-center">
-                        <p class="text-center text-white mb-16">Nothing added yet — tap + to add your first task</p>
-                        <p class="small text-white" style="opacity: 0.7;">"The secret of getting ahead is getting started."</p>
+                        <p class="text-center mb-16" style="color:white;">Nothing added yet — tap + to add your first task</p>
+                        <p class="small" style="color:white;opacity: 0.7;">"The secret of getting ahead is getting started."</p>
                     </div>
                 `;
             }
 
-            // Today's Tasks
             const tasksList = document.getElementById('main-tasks-list');
             const incomplete = state.tasks.filter(t => !t.done).sort((a,b) => new Date(a.deadline||'2099') - new Date(b.deadline||'2099'));
             tasksList.innerHTML = incomplete.map(t => `
@@ -1158,12 +1186,11 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     <div class="checkbox" onclick="toggleTask('${t.id}', this.parentElement)"></div>
                     <div style="flex-grow:1; overflow:hidden;">
                         <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</div>
-                        ${t.deadline ? `<div class="small mt-4">Due: ${t.deadline}</div>` : ''}
+                        ${t.deadline ? `<div class="small mt-4" style="color:var(--text-muted);">Due: ${t.deadline}</div>` : ''}
                     </div>
                 </div>
-            `).join('');
+            `).join('') || `<p class="text-center text-muted">No tasks yet. Tap + to add one.</p>`;
 
-            // Reminders Strip
             const rems = state.reminders.filter(r => !r.notified).sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99')).slice(0,3);
             const remsList = document.getElementById('main-reminders-list');
             remsList.innerHTML = rems.map(r => `
@@ -1171,16 +1198,15 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             `).join('');
             if(rems.length === 0) remsList.innerHTML = `<div class="small text-muted">No upcoming reminders</div>`;
             
-            // Render notes into right panel on desktop
             if (window.innerWidth >= 900) {
                 const rightPanel = document.getElementById('main-right-panel');
                 rightPanel.innerHTML = `
-                    <div class="header">
+                    <div class="flex justify-between items-center mb-16">
                         <h1>Notes Vault</h1>
                         <button class="pill-btn active" id="btn-new-note-desktop" style="width:auto; min-height:auto;">+ New</button>
                     </div>
-                    <input type="text" id="notes-search-input-desktop" placeholder="Search notes..." autocomplete="off" style="margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.05); padding: 12px 16px;">
-                    <div id="notes-list-desktop" class="flex-col gap-12" style="padding-right: 8px;"></div>
+                    <input type="text" id="notes-search-input-desktop" placeholder="Search notes..." autocomplete="off" style="margin-bottom: 24px;">
+                    <div id="notes-list-desktop" class="flex-col gap-12"></div>
                 `;
                 document.getElementById('btn-new-note-desktop').addEventListener('click', createNewNote);
                 document.getElementById('notes-search-input-desktop').addEventListener('input', (e) => {
@@ -1209,8 +1235,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }
 
             list.innerHTML = sorted.map(t => `
-                <div class="task-row ${t.done ? 'done' : ''} ${currentFocusTaskId === t.id && isFocusActive ? 'active-focus' : ''}" style="${currentFocusTaskId === t.id && isFocusActive ? 'border-color: var(--accent);' : ''}">
-                    <div class="checkbox" onclick="toggleTask('${t.id}', this.parentElement)"></div>
+                <div class="task-row ${t.done ? 'done' : ''}">
+                    <div class="checkbox ${t.done ? 'checked' : ''}" onclick="toggleTask('${t.id}', this.parentElement)"></div>
                     <div style="flex-grow:1; overflow:hidden;">
                         <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</div>
                         <div class="flex gap-8 mt-4">
@@ -1312,6 +1338,13 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }, 3000);
         };
 
+        window.quickAddReminder = (text, emoji) => {
+            const newRem = { id: 'r_' + Date.now(), emoji, text, time: '', notified: false };
+            saveState('reminders', [newRem, ...state.reminders]);
+            renderReminders();
+            if(currentScreen === 'screen-main') renderMain();
+        };
+
         // --- Notes Logic ---
         let currentNoteSearchQuery = '';
 
@@ -1340,7 +1373,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             
             let displayNotes = [...state.notes];
             
-            // Apply Search
             if (currentNoteSearchQuery.trim()) {
                 const query = currentNoteSearchQuery.toLowerCase();
                 displayNotes = displayNotes.filter(n => 
@@ -1349,7 +1381,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 );
             }
 
-            // Sort by updated at (newest first)
             displayNotes.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
             
             if(displayNotes.length === 0) {
@@ -1360,15 +1391,14 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             list.innerHTML = displayNotes.map(n => `
                 <div class="card" style="padding: 16px;">
                     <div class="flex justify-between items-center mb-8">
-                        <input type="text" class="note-title-input" value="${n.title}" data-id="${n.id}" placeholder="Note Title">
+                        <input type="text" class="note-title-input" value="${n.title.replace(/"/g, '&quot;')}" data-id="${n.id}" placeholder="Note Title" style="border:none;padding:0;font-weight:600;font-size:15px;background:transparent;">
                         <button class="icon-btn" onclick="confirmDeleteNote('${n.id}', this)">🗑️</button>
                     </div>
-                    <textarea class="note-content" data-id="${n.id}" placeholder="Type or paste anything here...">${n.content}</textarea>
-                    <div class="small text-muted text-right">Updated: ${new Date(n.updatedAt).toLocaleDateString()}</div>
+                    <textarea class="note-content" data-id="${n.id}" placeholder="Type or paste anything here..." style="border:none;padding:0;background:transparent;min-height:80px;resize:none;">${n.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                    <div class="small text-muted text-right mt-8">Updated: ${new Date(n.updatedAt).toLocaleDateString()}</div>
                 </div>
             `).join('');
 
-            // Attach auto-save listeners
             list.querySelectorAll('.note-title-input').forEach(input => {
                 input.addEventListener('input', (e) => updateNote(e.target.dataset.id, 'title', e.target.value));
             });
@@ -1377,9 +1407,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             });
         };
 
-        const renderNotes = () => {
-            renderNotesList('notes-list');
-        };
+        const renderNotes = () => renderNotesList('notes-list');
 
         const updateNote = (id, field, value) => {
             const note = state.notes.find(n => n.id === id);
@@ -1409,159 +1437,103 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }, 3000);
         };
 
-        // --- Focus Tools Logic ---
+        // --- Mental Advice Messages ---
         const mentalAdviceMessages = [
-            // Soft Grounding & Safety
-            "You don’t have to figure everything out right now—just being here is enough.",
+            "You don't have to figure everything out right now—just being here is enough.",
             "Take a slow breath… nothing else needs your attention in this moment.",
-            "You are allowed to pause, even if the world feels like it’s rushing.",
+            "You are allowed to pause, even if the world feels like it's rushing.",
             "This moment may feel heavy, but it is not permanent.",
-            "You’re safe to take things one step at a time, without pressure.",
+            "You're safe to take things one step at a time, without pressure.",
             "Even now, your body is trying to protect you, not harm you.",
-            "It’s okay to sit with yourself quietly, without fixing anything.",
+            "It's okay to sit with yourself quietly, without fixing anything.",
             "You can soften your shoulders, unclench your jaw, and just breathe.",
             "There is no urgency in healing—you can move gently.",
-            "You don’t need to carry everything at once.",
-            "Rest is not something you earn, it’s something you need.",
+            "You don't need to carry everything at once.",
+            "Rest is not something you earn, it's something you need.",
             "You can begin again, as many times as it takes.",
             "You are not in danger, even if your thoughts feel loud.",
-            "It’s okay to feel this without understanding it fully.",
+            "It's okay to feel this without understanding it fully.",
             "Your breath can always bring you back to the present.",
             "You are allowed to take up space, even in your quiet moments.",
             "Nothing about this moment defines your entire life.",
             "You can let things be unfinished for now.",
-            "You don’t need to rush your way out of this feeling.",
+            "You don't need to rush your way out of this feeling.",
             "Even small moments of calm count.",
             "You are still here, and that matters.",
             "You can be gentle with yourself today.",
             "There is no right way to feel right now.",
-            "You don’t have to hold everything together perfectly.",
+            "You don't have to hold everything together perfectly.",
             "You are allowed to just exist for a while.",
-            // When Thoughts Feel Heavy
             "Your thoughts may be loud, but they are not always true.",
-            "You don’t have to follow every thought your mind creates.",
-            "It’s okay to let a thought pass without holding onto it.",
+            "You don't have to follow every thought your mind creates.",
+            "It's okay to let a thought pass without holding onto it.",
             "Not everything your mind says deserves your energy.",
             "You can notice a thought and still choose peace.",
-            "Your mind is trying to make sense of things, even if it feels messy.",
             "You are not your thoughts—you are the one observing them.",
-            "It’s okay if your mind wanders; gently bring it back.",
-            "You don’t need to solve every “what if” right now.",
+            "It's okay if your mind wanders; gently bring it back.",
+            "You don't need to solve every 'what if' right now.",
             "Some thoughts are just noise, not signals.",
             "You can choose which thoughts to give meaning to.",
-            "It’s okay to step away from overthinking.",
             "You are allowed to rest your mind.",
             "Let your thoughts come and go like passing clouds.",
-            "You don’t need certainty to feel calm.",
-            "Your thoughts don’t control your actions—you do.",
-            "It’s okay if clarity takes time.",
-            "You can come back to what’s real in this moment.",
-            "Your mind can slow down, even if it doesn’t feel like it now.",
-            "You don’t have to answer every question in your head.",
-            "Some things can remain unknown for now.",
-            "You are allowed to take a break from thinking.",
-            "Your mind is active, but you can still find stillness.",
-            "You can gently redirect your attention.",
-            "Peace doesn’t require perfect thoughts.",
-            // Self-Worth & Kindness
+            "You don't need certainty to feel calm.",
+            "Your thoughts don't control your actions—you do.",
             "You are worthy, even on days when you feel unsure.",
-            "You don’t need to prove your value to exist.",
+            "You don't need to prove your value to exist.",
             "You are allowed to be imperfect and still be enough.",
             "The way you speak to yourself matters—try softness.",
             "You deserve the same kindness you give others.",
             "You are not defined by your worst moments.",
             "Growth takes time, and you are already on your way.",
             "You are doing better than you think you are.",
-            "It’s okay to be a work in progress.",
+            "It's okay to be a work in progress.",
             "You are allowed to forgive yourself slowly.",
-            "You don’t have to be strong all the time.",
+            "You don't have to be strong all the time.",
             "You are still worthy, even when you feel tired.",
-            "Your effort matters, even if it’s unseen.",
+            "Your effort matters, even if it's unseen.",
             "You are not behind—you are on your own timeline.",
-            "You can treat yourself with patience.",
-            "You are allowed to feel proud of small steps.",
-            "You don’t need to be perfect to be loved.",
-            "You are enough, even without achieving anything today.",
-            "Your presence has value.",
-            "You can learn without judging yourself.",
             "You deserve peace, not constant pressure.",
-            "You can let go of harsh self-criticism.",
-            "You are allowed to grow at your own pace.",
-            "You don’t need to compare your journey to anyone else’s.",
-            "You are still becoming, and that’s okay.",
-            // Hard Days & Healing
-            "Some days are heavier, and that’s part of being human.",
-            "You don’t have to be okay all the time.",
-            "It’s okay to move slowly on difficult days.",
-            "You can rest and still be moving forward.",
+            "You are enough, even without achieving anything today.",
+            "Some days are heavier, and that's part of being human.",
+            "You don't have to be okay all the time.",
             "Healing is not linear—it has quiet days too.",
-            "You are allowed to take breaks from everything.",
             "This feeling will shift, even if slowly.",
-            "You’ve made it through hard moments before.",
-            "You can hold pain and still keep going.",
-            "You don’t need to rush your healing.",
-            "It’s okay if today feels different from yesterday.",
+            "You've made it through hard moments before.",
+            "You don't need to rush your healing.",
             "You are not alone in feeling this way.",
-            "You can ask for help when it feels too heavy.",
             "Even difficult days have small moments of relief.",
             "You are allowed to start again tomorrow.",
-            "You don’t have to carry yesterday into today.",
-            "You can let go of what you can’t change.",
-            "It’s okay to not have everything figured out.",
-            "You can survive this moment, just like others before it.",
             "You are stronger than you feel right now.",
             "You can keep going, gently.",
             "There is still space for hope, even now.",
-            "You are allowed to take life one day at a time.",
-            "You can find your way, even if it takes time.",
-            "You will be okay, even if it doesn’t feel like it yet."
+            "You will be okay, even if it doesn't feel like it yet."
         ];
 
         const getNextQuickReset = () => {
             const currentText = document.getElementById('quick-reset-text').textContent;
             let nextMsg;
-            if(!currentText) {
+            do {
                 nextMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
-            } else {
-                do {
-                    nextMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
-                } while (nextMsg === currentText);
-            }
+            } while (nextMsg === currentText && mentalAdviceMessages.length > 1);
             document.getElementById('quick-reset-text').textContent = nextMsg;
         };
 
         document.getElementById('btn-quick-reset-next').addEventListener('click', getNextQuickReset);
 
+        // --- Focus Tools ---
         window.startFocusTool = (tool) => {
-            if (tool === 'breathe') {
-                showScreen('screen-tool-breathe');
-                startToolBreathe();
-            } else if (tool === 'bubble') {
-                showScreen('screen-tool-bubble');
-                startToolBubble();
-            } else if (tool === 'release') {
-                showScreen('screen-tool-release');
-                startToolRelease();
-            } else if (tool === 'study') {
-                showScreen('screen-tool-study');
-                startToolStudy();
-            } else if (tool === 'react') {
-                showScreen('screen-tool-react');
-                startToolReact();
-            } else if (tool === 'zen') {
-                showScreen('screen-tool-zen');
-                startToolZen();
-            }
+            if (tool === 'breathe') { showScreen('screen-tool-breathe'); startToolBreathe(); }
+            else if (tool === 'bubble') { showScreen('screen-tool-bubble'); startToolBubble(); }
+            else if (tool === 'release') { showScreen('screen-tool-release'); startToolRelease(); }
+            else if (tool === 'study') { showScreen('screen-tool-study'); startToolStudy(); }
+            else if (tool === 'react') { showScreen('screen-tool-react'); startToolReact(); }
+            else if (tool === 'zen') { showScreen('screen-tool-zen'); startToolZen(); }
         };
 
         // Breathe Tool
-        let toolBreathePhase = 0; // 0: wait, 1: in (4s), 2: hold (2s), 3: out (6s)
-        let toolBreatheCycles = 0;
         let toolBreatheTimeout;
-
         const startToolBreathe = () => {
-            toolBreatheCycles = 0;
-            toolBreathePhase = 0;
+            let toolBreatheCycles = 0;
             const circle = document.getElementById('tool-breathe-circle');
             const text = document.getElementById('tool-breathe-text');
             circle.style.transform = 'scale(1)';
@@ -1575,8 +1547,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 else {
                     clearInterval(countInt);
                     text.textContent = '';
-                    toolBreathePhase = 1;
-                    runToolBreatheCycle();
+                    runToolBreatheCycle(1, 0);
                 }
             }, 1000);
 
@@ -1587,69 +1558,115 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             };
         };
 
-        const runToolBreatheCycle = () => {
+        const runToolBreatheCycle = (phase, cycles) => {
             const circle = document.getElementById('tool-breathe-circle');
-            if(toolBreathePhase === 1) {
+            if (circles >= 3) { circle.textContent = "You're ready."; document.getElementById('btn-tool-breathe-back').textContent = "Go back"; return; }
+            if(phase === 1) {
                 circle.textContent = 'Breathe in...';
                 circle.style.transition = 'transform 4s linear';
                 circle.style.transform = 'scale(1.8)';
-                toolBreatheTimeout = setTimeout(() => { toolBreathePhase = 2; runToolBreatheCycle(); }, 4000);
-            } else if(toolBreathePhase === 2) {
+                toolBreatheTimeout = setTimeout(() => runToolBreatheCycle(2, cycles), 4000);
+            } else if(phase === 2) {
                 circle.textContent = 'Hold...';
-                circle.style.transition = 'transform 2s linear';
-                toolBreatheTimeout = setTimeout(() => { toolBreathePhase = 3; runToolBreatheCycle(); }, 2000);
-            } else if(toolBreathePhase === 3) {
+                toolBreatheTimeout = setTimeout(() => runToolBreatheCycle(3, cycles), 2000);
+            } else if(phase === 3) {
                 circle.textContent = 'Breathe out...';
                 circle.style.transition = 'transform 6s linear';
                 circle.style.transform = 'scale(1)';
-                toolBreatheTimeout = setTimeout(() => { 
-                    toolBreathePhase = 1; 
-                    toolBreatheCycles++;
-                    if(toolBreatheCycles < 3) runToolBreatheCycle();
-                    else {
-                        circle.textContent = "You're ready.";
-                        document.getElementById('btn-tool-breathe-back').textContent = "Go back";
-                    }
+                toolBreatheTimeout = setTimeout(() => {
+                    const nextCycles = cycles + 1;
+                    if(nextCycles < 3) runToolBreatheCycle(1, nextCycles);
+                    else { circle.textContent = "You're ready."; document.getElementById('btn-tool-breathe-back').textContent = "Go back"; }
                 }, 6000);
             }
         };
 
-        // Bubble Pop Tool
-        let bubblePops = 0;
-        let bubbleTimer;
-        let bubbleInterval;
+        // Fixed breathe tool — rewritten to avoid scoping bug
+        const startToolBreatheFixed = () => {
+            let cycles = 0;
+            let phase = 0;
+            const circle = document.getElementById('tool-breathe-circle');
+            const text = document.getElementById('tool-breathe-text');
+            circle.style.transform = 'scale(1)';
+            circle.textContent = 'Ready?';
+            text.textContent = 'Starting in 3...';
+            
+            let countdown = 3;
+            const countInt = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    text.textContent = `Starting in ${countdown}...`;
+                } else {
+                    clearInterval(countInt);
+                    text.textContent = '';
+                    runCycle();
+                }
+            }, 1000);
 
+            const runCycle = () => {
+                if (cycles >= 3) {
+                    circle.textContent = "You're ready.";
+                    document.getElementById('btn-tool-breathe-back').textContent = "Go back";
+                    return;
+                }
+                phase = 1;
+                circle.textContent = 'Breathe in...';
+                circle.style.transition = 'transform 4s linear';
+                circle.style.transform = 'scale(1.8)';
+                toolBreatheTimeout = setTimeout(() => {
+                    circle.textContent = 'Hold...';
+                    toolBreatheTimeout = setTimeout(() => {
+                        circle.textContent = 'Breathe out...';
+                        circle.style.transition = 'transform 6s linear';
+                        circle.style.transform = 'scale(1)';
+                        toolBreatheTimeout = setTimeout(() => {
+                            cycles++;
+                            runCycle();
+                        }, 6000);
+                    }, 2000);
+                }, 4000);
+            };
+
+            document.getElementById('btn-tool-breathe-back').onclick = () => {
+                clearInterval(countInt);
+                clearTimeout(toolBreatheTimeout);
+                document.getElementById('btn-tool-breathe-back').textContent = "Cancel";
+                showScreen('screen-focus-tools');
+            };
+        };
+
+        // Override startToolBreathe with the fixed version
+        window.startToolBreatheFixed = startToolBreatheFixed;
+        const _origStartFocusTool = window.startFocusTool;
+        window.startFocusTool = (tool) => {
+            if (tool === 'breathe') { showScreen('screen-tool-breathe'); startToolBreatheFixed(); }
+            else _origStartFocusTool(tool);
+        };
+
+        // Bubble Pop Tool
+        let bubblePops = 0, bubbleTimer, bubbleInterval;
         const startToolBubble = () => {
             bubblePops = 0;
             const container = document.getElementById('bubble-container');
             container.innerHTML = '';
             document.getElementById('tool-bubble-done').classList.add('hidden');
             document.getElementById('btn-tool-bubble-cancel').classList.remove('hidden');
-            
             document.getElementById('btn-tool-bubble-cancel').onclick = stopToolBubble;
-            
-            bubbleTimer = setTimeout(endToolBubble, 30000); // 30s limit
+            bubbleTimer = setTimeout(endToolBubble, 30000);
             bubbleInterval = setInterval(spawnBubble, 800);
             spawnBubble();
         };
 
         const spawnBubble = () => {
             if (bubblePops >= 15) return;
-            
             const container = document.getElementById('bubble-container');
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
-            
-            const size = Math.random() * 30 + 30; // 30-60px
+            const size = Math.random() * 30 + 30;
             bubble.style.width = `${size}px`;
             bubble.style.height = `${size}px`;
-            
-            const safeX = Math.random() * (container.clientWidth - size);
-            const safeY = Math.random() * (container.clientHeight - size - 80); // leave bottom space
-            
-            bubble.style.left = `${safeX}px`;
-            bubble.style.top = `${safeY}px`;
-            
+            bubble.style.left = `${Math.random() * (container.clientWidth - size)}px`;
+            bubble.style.top = `${Math.random() * (container.clientHeight - size - 80)}px`;
             bubble.onclick = (e) => {
                 createRipple(e.clientX, e.clientY);
                 bubble.classList.add('popped');
@@ -1657,10 +1674,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 setTimeout(() => bubble.remove(), 300);
                 if (bubblePops >= 15) endToolBubble();
             };
-            
             container.appendChild(bubble);
-            
-            // Remove unpopped bubbles after 3s
             setTimeout(() => {
                 if (container.contains(bubble) && !bubble.classList.contains('popped')) {
                     bubble.style.opacity = '0';
@@ -1672,28 +1686,18 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         const createRipple = (x, y) => {
             const ripple = document.createElement('div');
             ripple.className = 'bubble-ripple';
-            ripple.style.left = `${x - 25}px`;
-            ripple.style.top = `${y - 25}px`;
-            ripple.style.width = '50px';
-            ripple.style.height = '50px';
+            ripple.style.cssText = `left:${x-25}px;top:${y-25}px;width:50px;height:50px;position:fixed;`;
             document.body.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         };
 
-        const stopToolBubble = () => {
-            clearTimeout(bubbleTimer);
-            clearInterval(bubbleInterval);
-            showScreen('screen-focus-tools');
-        };
-
+        const stopToolBubble = () => { clearTimeout(bubbleTimer); clearInterval(bubbleInterval); showScreen('screen-focus-tools'); };
         const endToolBubble = () => {
-            clearTimeout(bubbleTimer);
-            clearInterval(bubbleInterval);
+            clearTimeout(bubbleTimer); clearInterval(bubbleInterval);
             document.getElementById('bubble-container').innerHTML = '';
             document.getElementById('btn-tool-bubble-cancel').classList.add('hidden');
             document.getElementById('tool-bubble-done').classList.remove('hidden');
-            
-            document.getElementById('btn-tool-bubble-back').onclick = stopToolBubble;
+            document.getElementById('btn-tool-bubble-back').onclick = () => showScreen('screen-focus-tools');
         };
 
         // Release Tool
@@ -1701,60 +1705,39 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             document.getElementById('tool-release-done').classList.add('hidden');
             document.getElementById('release-container').classList.remove('hidden');
             document.getElementById('btn-tool-release-cancel').classList.remove('hidden');
-            
             const textarea = document.getElementById('release-textarea');
             textarea.value = '';
             textarea.classList.remove('dissolve');
-            
             document.getElementById('btn-tool-release-cancel').onclick = () => showScreen('screen-focus-tools');
-            
-            const releaseQuotes = [
-                "Let it go.",
-                "You’re doing better than you think.",
-                "This moment will pass.",
-                "You’re in control.",
-                "Breathe in peace, exhale tension.",
-                "You are enough."
-            ];
-
+            const releaseQuotes = ["Let it go.", "You're doing better than you think.", "This moment will pass.", "You're in control.", "Breathe in peace, exhale tension.", "You are enough."];
             document.getElementById('btn-tool-release').onclick = () => {
                 if(!textarea.value.trim()) return;
-                
                 textarea.classList.add('dissolve');
                 document.getElementById('btn-tool-release').style.display = 'none';
-                
                 setTimeout(() => {
                     document.getElementById('release-container').classList.add('hidden');
                     document.getElementById('tool-release-done').classList.remove('hidden');
                     document.getElementById('btn-tool-release-cancel').classList.add('hidden');
-                    document.getElementById('btn-tool-release').style.display = 'flex'; // reset
-                    
-                    const quote = releaseQuotes[Math.floor(Math.random() * releaseQuotes.length)];
-                    document.getElementById('release-quote-text').textContent = quote;
+                    document.getElementById('btn-tool-release').style.display = 'flex';
+                    document.getElementById('release-quote-text').textContent = releaseQuotes[Math.floor(Math.random() * releaseQuotes.length)];
                 }, 2000);
             };
-            
             document.getElementById('btn-tool-release-back').onclick = () => showScreen('screen-focus-tools');
         };
 
-        // Study Boost Tool
-        let studyQuestions = [];
-        let studyIndex = 0;
-
+        // Study Boost
+        let studyQuestions = [], studyIndex = 0;
         const startToolStudy = () => {
             document.getElementById('study-setup').classList.remove('hidden');
             document.getElementById('study-flow').classList.add('hidden');
             document.getElementById('study-done').classList.add('hidden');
             document.getElementById('study-topic').value = '';
             document.getElementById('study-notes').value = '';
-
             document.getElementById('btn-study-cancel').onclick = () => showScreen('screen-focus-tools');
             document.getElementById('btn-study-back').onclick = () => showScreen('screen-focus-tools');
-
             document.getElementById('btn-study-start').onclick = () => {
                 const topic = document.getElementById('study-topic').value.trim();
                 if (!topic) return;
-
                 studyQuestions = [
                     `What is the most fundamental concept of ${topic}?`,
                     `How would you explain ${topic} to a friend in one sentence?`,
@@ -1764,13 +1747,12 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 document.getElementById('study-flow-topic').textContent = topic;
                 document.getElementById('study-setup').classList.add('hidden');
                 document.getElementById('study-flow').classList.remove('hidden');
-                renderStudyQuestion();
+                document.getElementById('study-question').textContent = studyQuestions[0];
             };
-
             document.getElementById('btn-study-next').onclick = () => {
                 studyIndex++;
                 if (studyIndex < studyQuestions.length) {
-                    renderStudyQuestion();
+                    document.getElementById('study-question').textContent = studyQuestions[studyIndex];
                 } else {
                     document.getElementById('study-flow').classList.add('hidden');
                     document.getElementById('study-done').classList.remove('hidden');
@@ -1778,26 +1760,15 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             };
         };
 
-        const renderStudyQuestion = () => {
-            document.getElementById('study-question').textContent = studyQuestions[studyIndex];
-        };
-
         // React Tool
-        let reactRound = 0;
-        let reactTimeout;
-
+        let reactRound = 0, reactTimeout;
         const startToolReact = () => {
             reactRound = 0;
             document.getElementById('tool-react-done').classList.add('hidden');
             document.getElementById('tool-react-counter').classList.remove('hidden');
             document.getElementById('tool-react-dot').style.display = 'none';
             document.getElementById('btn-tool-react-cancel').classList.remove('hidden');
-            
-            document.getElementById('btn-tool-react-cancel').onclick = () => {
-                clearTimeout(reactTimeout);
-                showScreen('screen-focus-tools');
-            };
-            
+            document.getElementById('btn-tool-react-cancel').onclick = () => { clearTimeout(reactTimeout); showScreen('screen-focus-tools'); };
             nextReactRound();
         };
 
@@ -1807,103 +1778,73 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 document.getElementById('tool-react-counter').classList.add('hidden');
                 document.getElementById('btn-tool-react-cancel').classList.add('hidden');
                 document.getElementById('tool-react-done').classList.remove('hidden');
-                
-                document.getElementById('btn-tool-react-back').onclick = () => {
-                    showScreen('screen-focus-tools');
-                };
+                document.getElementById('btn-tool-react-back').onclick = () => showScreen('screen-focus-tools');
                 return;
             }
-
             reactRound++;
             document.getElementById('tool-react-counter').textContent = `Round ${reactRound}/10`;
             document.getElementById('tool-react-dot').style.display = 'none';
-
-            const delay = Math.random() * 1500 + 500;
-            
             reactTimeout = setTimeout(() => {
                 const dot = document.getElementById('tool-react-dot');
                 const safeX = Math.max(20, Math.random() * (window.innerWidth > 440 ? 400 : window.innerWidth - 68));
                 const safeY = Math.max(80, Math.random() * (window.innerHeight - 200));
-                
                 dot.style.left = `${safeX}px`;
                 dot.style.top = `${safeY}px`;
                 dot.style.display = 'block';
                 dot.style.transform = 'scale(0)';
                 setTimeout(() => dot.style.transform = 'scale(1)', 10);
-                
-                dot.onclick = () => {
-                    dot.style.display = 'none';
-                    dot.onclick = null;
-                    nextReactRound();
-                };
-            }, delay);
+                dot.onclick = () => { dot.style.display = 'none'; dot.onclick = null; nextReactRound(); };
+            }, Math.random() * 1500 + 500);
         };
 
-        // Zen Canvas Tool
+        // Zen Canvas
         const startToolZen = () => {
             const canvas = document.getElementById('zen-canvas');
             const ctx = canvas.getContext('2d');
-            let drawing = false;
-            let lines = [];
-
-            const resize = () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            };
-            window.addEventListener('resize', resize);
+            let drawing = false, lines = [];
+            const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
             resize();
+            const resizeObs = new ResizeObserver(resize);
+            resizeObs.observe(canvas);
 
             const getPos = (e) => {
                 const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
+                const src = e.touches ? e.touches[0] : e;
+                return { x: src.clientX - rect.left, y: src.clientY - rect.top };
             };
 
-            const startDraw = (e) => { drawing = true; addPoint(e); };
+            const startDraw = (e) => { e.preventDefault(); drawing = true; lines.push({...getPos(e), age: 0, start: true}); };
             const endDraw = () => { drawing = false; };
-            const draw = (e) => { if (drawing) addPoint(e); };
-
-            const addPoint = (e) => {
-                const pos = getPos(e);
-                lines.push({ x: pos.x, y: pos.y, age: 0 });
-            };
+            const addPoint = (e) => { if(drawing) { e.preventDefault(); lines.push({...getPos(e), age: 0}); } };
 
             canvas.addEventListener('mousedown', startDraw);
-            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mousemove', addPoint);
             window.addEventListener('mouseup', endDraw);
-            canvas.addEventListener('touchstart', startDraw);
-            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchstart', startDraw, {passive:false});
+            canvas.addEventListener('touchmove', addPoint, {passive:false});
             window.addEventListener('touchend', endDraw);
 
             const animate = () => {
                 if (currentScreen !== 'screen-tool-zen') return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.lineWidth = 4;
-
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4;
                 for (let i = 1; i < lines.length; i++) {
-                    const p1 = lines[i-1];
-                    const p2 = lines[i];
-                    const alpha = Math.max(0, 1 - p2.age / 100);
-                    ctx.strokeStyle = `rgba(91, 82, 232, ${alpha})`;
+                    if (lines[i].start) continue;
+                    const alpha = Math.max(0, 1 - lines[i].age / 100);
+                    ctx.strokeStyle = `rgba(91,82,232,${alpha})`;
                     ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
+                    ctx.moveTo(lines[i-1].x, lines[i-1].y);
+                    ctx.lineTo(lines[i].x, lines[i].y);
                     ctx.stroke();
                 }
-
                 lines.forEach(p => p.age++);
                 lines = lines.filter(p => p.age < 100);
-
                 requestAnimationFrame(animate);
             };
             animate();
 
             document.getElementById('btn-tool-zen-back').onclick = () => {
-                window.removeEventListener('resize', resize);
+                resizeObs.disconnect();
                 window.removeEventListener('mouseup', endDraw);
                 window.removeEventListener('touchend', endDraw);
                 showScreen('screen-focus-tools');
@@ -1912,15 +1853,12 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         // --- Bottom Sheet & Add Logic ---
         const sheet = document.getElementById('add-sheet');
-        
-        fab.addEventListener('click', () => {
-            sheet.classList.add('open');
-        });
-
+        fab.addEventListener('click', () => sheet.classList.add('open'));
         document.addEventListener('mousedown', (e) => {
-            if(!sheet.contains(e.target) && !fab.contains(e.target)) {
-                sheet.classList.remove('open');
-            }
+            if(!sheet.contains(e.target) && !fab.contains(e.target)) sheet.classList.remove('open');
+        });
+        document.addEventListener('touchstart', (e) => {
+            if(!sheet.contains(e.target) && !fab.contains(e.target)) sheet.classList.remove('open');
         });
 
         document.getElementById('tab-add-task').onclick = () => {
@@ -1957,17 +1895,12 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             const subject = document.getElementById('add-task-subject').value.trim();
             const deadline = document.getElementById('add-task-deadline').value;
             const mins = parseInt(document.querySelector('#add-task-time .pill-btn.active').dataset.val);
-
-            const newTask = {
-                id: 't_' + Date.now(),
-                name, subject, deadline, estimatedMins: mins,
-                done: false, createdAt: new Date().toISOString()
-            };
-
+            const newTask = { id: 't_' + Date.now(), name, subject, deadline, estimatedMins: mins, done: false, createdAt: new Date().toISOString() };
             saveState('tasks', [newTask, ...state.tasks]);
             sheet.classList.remove('open');
             document.getElementById('add-task-name').value = '';
             document.getElementById('add-task-subject').value = '';
+            document.getElementById('add-task-deadline').value = '';
             renderMain();
             renderTasks();
         };
@@ -1977,47 +1910,34 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             if(!text) return;
             const emoji = document.querySelector('.emoji-btn.selected').textContent;
             const time = document.getElementById('add-reminder-time').value;
-
-            if(time && Notification.permission !== 'granted') {
-                await Notification.requestPermission();
-            }
-
-            const newRem = {
-                id: 'r_' + Date.now(),
-                emoji, text, time, notified: false
-            };
-
+            if(time && Notification.permission !== 'granted') await Notification.requestPermission();
+            const newRem = { id: 'r_' + Date.now(), emoji, text, time, notified: false };
             saveState('reminders', [newRem, ...state.reminders]);
             sheet.classList.remove('open');
             document.getElementById('add-reminder-text').value = '';
+            document.getElementById('add-reminder-time').value = '';
             renderMain();
             renderReminders();
         };
 
-        // --- Focus Mode Logic ---
-        let currentFocusTaskId = null;
-        let focusTimerInterval = null;
-        let focusTimeLeft = 1500;
-        let isFocusActive = false;
+        // --- Focus Mode ---
+        let currentFocusTaskId = null, focusTimerInterval = null, focusTimeLeft = 1500, isFocusActive = false;
 
         window.startFocus = (taskId) => {
             currentFocusTaskId = taskId;
             const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
             document.getElementById('focus-task-name').textContent = task.name;
             document.getElementById('distraction-task-name').textContent = task.name;
-            
             isFocusActive = true;
-            focusTimeLeft = 1500;
+            focusTimeLeft = task.estimatedMins ? task.estimatedMins * 60 : 1500;
             updateFocusDisplay();
             showScreen('screen-focus');
-            
+            clearInterval(focusTimerInterval);
             focusTimerInterval = setInterval(() => {
                 focusTimeLeft--;
                 updateFocusDisplay();
-                if(focusTimeLeft <= 0) {
-                    clearInterval(focusTimerInterval);
-                    alert("Time's up! Take a break or mark as done.");
-                }
+                if(focusTimeLeft <= 0) { clearInterval(focusTimerInterval); }
             }, 1000);
         };
 
@@ -2030,7 +1950,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         document.getElementById('btn-focus-done').onclick = () => {
             clearInterval(focusTimerInterval);
             isFocusActive = false;
-            toggleTask(currentFocusTaskId);
+            if (currentFocusTaskId) toggleTask(currentFocusTaskId);
             showScreen('screen-main');
         };
 
@@ -2040,80 +1960,60 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             startBreatheBreak();
         };
 
-        // Distraction Logic
         document.addEventListener('visibilitychange', () => {
             if (document.hidden && isFocusActive) {
                 document.getElementById('overlay-distraction').classList.remove('hidden');
             }
         });
 
-        document.getElementById('btn-distraction-back').onclick = () => {
-            document.getElementById('overlay-distraction').classList.add('hidden');
-        };
-
+        document.getElementById('btn-distraction-back').onclick = () => document.getElementById('overlay-distraction').classList.add('hidden');
         document.getElementById('btn-distraction-done').onclick = () => {
             document.getElementById('overlay-distraction').classList.add('hidden');
             document.getElementById('btn-focus-done').click();
         };
 
-        // --- Breathe Break Logic ---
+        // Breathe Break
         let breatheLoop = 1;
-        let breatheInterval = null;
-
-        const startBreatheBreak = () => {
-            breatheLoop = 1;
-            runBreatheCycle();
-        };
-
+        const startBreatheBreak = () => { breatheLoop = 1; runBreatheCycle(); };
         const runBreatheCycle = () => {
             const circle = document.getElementById('breathe-circle');
             const label = document.getElementById('breathe-label');
             label.textContent = `Loop ${breatheLoop}/2`;
-            
             circle.textContent = "Breathe in...";
             circle.style.transition = "transform 4s ease-in-out";
             circle.style.transform = "scale(1.5)";
-            
             setTimeout(() => {
                 circle.textContent = "Hold...";
                 setTimeout(() => {
                     circle.textContent = "Breathe out...";
                     circle.style.transform = "scale(1)";
                     circle.style.transition = "transform 8s ease-in-out";
-                    
                     setTimeout(() => {
-                        if(breatheLoop < 2) {
-                            breatheLoop++;
-                            runBreatheCycle();
-                        } else {
-                            circle.textContent = "Done.";
-                        }
+                        if(breatheLoop < 2) { breatheLoop++; runBreatheCycle(); }
+                        else circle.textContent = "Done.";
                     }, 8000);
                 }, 7000);
             }, 4000);
         };
 
         document.getElementById('btn-breathe-ready').onclick = () => {
-            showScreen('screen-focus');
-            startFocus(currentFocusTaskId);
+            if (currentFocusTaskId) startFocus(currentFocusTaskId);
+            else showScreen('screen-main');
         };
 
-        // --- Evening Reflection ---
+        // Evening Reflection
         const checkEveningReflection = () => {
             const now = new Date();
             const today = getTodayStr();
             const doneToday = state.reflections.some(r => r.date === today);
-            
             if(now.getHours() >= 20 && !doneToday) {
                 setTimeout(() => {
                     const overlay = document.getElementById('overlay-evening');
                     const content = document.getElementById('evening-content');
                     const nextTask = state.tasks.find(t => !t.done) || {name: "Plan your first task"};
-                    
                     content.innerHTML = `
                         <h2 class="mb-16">How did today actually go?</h2>
                         <p class="small mb-16">Reflection helps you grow.</p>
-                        
                         <p class="small mb-8">How did the day play out?</p>
                         <div class="flex gap-8 mb-16" style="flex-wrap: wrap;">
                             <div class="pill-btn active" data-ref="howItWent" data-val="Smooth ✨">Smooth ✨</div>
@@ -2121,30 +2021,24 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                             <div class="pill-btn" data-ref="howItWent" data-val="Mixed 🎢">Mixed 🎢</div>
                             <div class="pill-btn" data-ref="howItWent" data-val="Survival 🛡️">Survival 🛡️</div>
                         </div>
-
                         <p class="small mb-8">Did you do the thing you meant to?</p>
                         <div class="flex gap-8 mb-24" style="flex-wrap: wrap;">
                             <div class="pill-btn active" data-ref="onTrack" data-val="Yep ✅">Yep ✅</div>
                             <div class="pill-btn" data-ref="onTrack" data-val="Some 🔄">Some 🔄</div>
                             <div class="pill-btn" data-ref="onTrack" data-val="Not really 🌊">Not really 🌊</div>
                         </div>
-
                         <p class="small mb-8">First thing for tomorrow?</p>
                         <input type="text" id="ref-tomorrow" placeholder="One word is fine." class="mb-24">
-                        
                         <p class="small mb-16 text-muted">Next up: ${nextTask.name}</p>
                         <button id="btn-save-reflection">Close</button>
                     `;
-                    
                     overlay.classList.remove('hidden');
-
                     content.querySelectorAll('.pill-btn').forEach(btn => {
                         btn.onclick = () => {
                             content.querySelectorAll(`.pill-btn[data-ref="${btn.dataset.ref}"]`).forEach(b => b.classList.remove('active'));
                             btn.classList.add('active');
                         };
                     });
-
                     document.getElementById('btn-save-reflection').onclick = () => {
                         const reflection = {
                             date: today,
@@ -2159,7 +2053,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }
         };
 
-        // --- Nudge Logic ---
+        // Nudge
         const nudges = [
             "💧 Grab some water before the next one.",
             "🪟 Look at something far away for 20 seconds. Your eyes need it.",
@@ -2168,77 +2062,91 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             "🎉 You actually finished that. That counts.",
             "🫀 Are your shoulders near your ears? Let them drop.",
             "📵 Notifications off for the next one?",
-            "🌡️ Is the room okay? Discomfort quietly kills focus.",
-            "⏰ Still roughly on track today? 30-second check.",
             "🍎 When did you last eat? Low fuel = foggy thinking.",
-            "☀️ Is there natural light where you are? Move if not.",
-            "📋 Is the next task clear enough to start immediately?"
+            "⏰ Still roughly on track today? 30-second check.",
+            "☀️ Is there natural light where you are? Move if not."
         ];
 
         const showNudge = () => {
-            const nudge = nudges[Math.floor(Math.random() * nudges.length)];
-            const card = document.getElementById('nudge-card');
-            document.getElementById('nudge-text').textContent = nudge;
-            card.classList.remove('hidden');
-            setTimeout(() => card.classList.add('hidden'), 6000);
+            // Inline nudge as a toast
+            const existing = document.getElementById('nudge-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'nudge-toast';
+            toast.style.cssText = `
+                position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+                background: white; border-radius: 12px; padding: 12px 16px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.12); z-index: 500;
+                font-size: 14px; max-width: 320px; width: calc(100% - 48px);
+                border: 1px solid rgba(0,0,0,0.06); animation: slideUp 0.3s ease;
+            `;
+            toast.textContent = nudges[Math.floor(Math.random() * nudges.length)];
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.5s'; setTimeout(() => toast.remove(), 500); }, 5000);
         };
 
-        // --- Notification Logic ---
+        // Notifications
         setInterval(() => {
             if(Notification.permission === 'granted') {
                 const now = new Date();
                 const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-                
                 let changed = false;
                 state.reminders.forEach(r => {
                     if(r.time === hhmm && !r.notified) {
-                        new Notification("Task reminder", { body: r.text, icon: '⏰' });
+                        new Notification("NOW reminder", { body: r.text });
                         r.notified = true;
                         changed = true;
                     }
                 });
-                if(changed) {
-                    saveState('reminders', state.reminders);
-                    if(currentScreen === 'screen-main') renderMain();
-                }
+                if(changed) { saveState('reminders', state.reminders); if(currentScreen === 'screen-main') renderMain(); }
             }
         }, 60000);
 
-        // --- Init Flow ---
-        const init = async () => {
+        // --- FIXED: showDailyAdvice ---
+        // Uses sessionStorage keyed to today's date so it shows once per day per session
+        const showDailyAdvice = () => {
+            const todayKey = 'advice_shown_' + getTodayStr();
+            if (sessionStorage.getItem(todayKey)) return;
+
+            const randomMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
+            
+            // Set text BEFORE making overlay visible
+            const adviceTextEl = document.getElementById('advice-text');
+            adviceTextEl.textContent = randomMsg;
+            
+            // Small RAF to ensure DOM paint before showing
+            requestAnimationFrame(() => {
+                document.getElementById('overlay-advice').classList.remove('hidden');
+            });
+
+            document.getElementById('btn-advice-continue').onclick = () => {
+                document.getElementById('overlay-advice').classList.add('hidden');
+                sessionStorage.setItem(todayKey, 'true');
+            };
+        };
+
+        // --- Signout ---
+        const handleSignOut = () => { localStorage.clear(); location.reload(); };
+        document.getElementById('btn-signout').addEventListener('click', handleSignOut);
+        document.getElementById('btn-signout-pre').addEventListener('click', handleSignOut);
+
+        // --- Init ---
+        const init = () => {
             const user = getUser();
             const pinHash = getPinHash();
-
             if (user && pinHash) {
+                document.getElementById('entry-greeting').textContent = `Welcome back, ${user}.`;
                 showScreen('screen-pin-entry');
             } else {
                 showScreen('screen-login');
             }
         };
 
-        const handleSignOut = async () => {
-            localStorage.clear();
-            location.reload();
-        };
+        // Add slideUp animation
+        const style = document.createElement('style');
+        style.textContent = `@keyframes slideUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }`;
+        document.head.appendChild(style);
 
-        document.getElementById('btn-signout').addEventListener('click', handleSignOut);
-        if (document.getElementById('btn-signout-pre')) {
-            document.getElementById('btn-signout-pre').addEventListener('click', handleSignOut);
-        }
-
-        const showDailyAdvice = () => {
-            if (!sessionStorage.getItem('shown_advice_today')) {
-                const randomMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
-                document.getElementById('advice-text').textContent = randomMsg;
-                document.getElementById('overlay-advice').classList.remove('hidden');
-                
-                document.getElementById('btn-advice-continue').onclick = () => {
-                    document.getElementById('overlay-advice').classList.add('hidden');
-                    sessionStorage.setItem('shown_advice_today', 'true');
-                };
-            }
-        };
-        
         init();
     </script>
 </body>
