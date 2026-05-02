@@ -17,6 +17,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #F9F7F3;
@@ -389,6 +390,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             #checkin-container { max-width: 500px; margin: 0 auto; width: 100%; justify-content: center; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="app-container">
@@ -398,16 +400,16 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <h1 class="mb-8 text-center">NOW</h1>
             <p class="mb-24 text-center text-secondary">Your day, one thing at a time.</p>
             <div class="card w-full">
-                <p class="small mb-16 text-center">Enter a username to get started. Your data stays on this device.</p>
-                <input type="text" id="login-username" placeholder="Username" autocomplete="off">
+                <p class="small mb-16 text-center">Enter your email to get started.</p>
+                <input type="email" id="login-email" placeholder="Email Address" autocomplete="email" style="width: 100%; padding: 14px 16px; border-radius: var(--radius-input); border: 1px solid rgba(0,0,0,0.1); font-family: inherit; font-size: 15px; margin-bottom: 16px; background: var(--card-bg); outline: none;">
                 <button id="btn-login">Continue</button>
             </div>
         </div>
 
         <!-- Screen: PIN Setup -->
         <div id="screen-pin-setup" class="screen flex-col items-center justify-center hidden">
-            <h2 class="mb-8">Set a 4-digit PIN</h2>
-            <p class="small mb-24 text-center text-secondary">This keeps your space private. Don't worry — it's just for you.</p>
+            <h2 class="mb-8">Set your 4-digit PIN</h2>
+            <p class="small mb-24 text-center text-secondary">This will be your password. Don't forget it.</p>
             <div class="dots" id="setup-dots">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
@@ -421,8 +423,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         <!-- Screen: PIN Entry -->
         <div id="screen-pin-entry" class="screen flex-col items-center justify-center hidden">
-            <h2 class="mb-8" id="entry-greeting">Hey.</h2>
-            <p class="small mb-24 text-center text-secondary" id="entry-subtext">Enter your PIN to continue.</p>
+            <h2 class="mb-8" id="entry-greeting">Welcome Back.</h2>
+            <p class="small mb-24 text-center text-secondary" id="entry-subtext">Enter your PIN to sign in.</p>
             <div class="dots" id="entry-dots">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
@@ -432,7 +434,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 <div class="numpad-btn" data-val="7">7</div><div class="numpad-btn" data-val="8">8</div><div class="numpad-btn" data-val="9">9</div>
                 <div></div><div class="numpad-btn" data-val="0">0</div><div class="numpad-btn text-muted" data-val="del">⌫</div>
             </div>
-            <button class="text mt-24" id="btn-signout" style="width:auto; min-height:auto;">Sign out</button>
+            <button class="text mt-24" id="btn-signout-pre" style="width:auto; min-height:auto;">Switch account</button>
         </div>
 
         <!-- Screen: Daily Check-in -->
@@ -450,7 +452,10 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <div class="main-left-col">
                 <div class="header">
                     <h1 id="main-greeting">NOW</h1>
-                    <div class="streak-badge" id="streak-display">🔥 0</div>
+                    <div class="flex items-center gap-12">
+                        <div class="streak-badge" id="streak-display">🔥 0</div>
+                        <button class="icon-btn" id="btn-signout" title="Sign Out">🚪</button>
+                    </div>
                 </div>
 
                 <div class="card gradient-card flex-col" id="main-task-card">
@@ -744,9 +749,21 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
     </div>
 
     <script>
+        const SUPABASE_URL = "https://zgptpjaonkrowjitba.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_QOe3_erVAaW7Ond8pAH0bA_5tzvA8e1";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- Email Storage Helpers ---
+        function getUserEmail() {
+            return localStorage.getItem("now_email");
+        }
+
+        function setUserEmail(email) {
+            localStorage.setItem("now_email", email);
+        }
+
         // --- State Management ---
         const state = {
-            user: JSON.parse(localStorage.getItem('now_user') || 'null'),
             tasks: JSON.parse(localStorage.getItem('now_tasks') || '[]'),
             reminders: JSON.parse(localStorage.getItem('now_reminders') || '[]'),
             notes: JSON.parse(localStorage.getItem('now_notes') || '[]'),
@@ -761,14 +778,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         };
 
         const getTodayStr = () => new Date().toISOString().split('T')[0];
-
-        // --- Crypto Helper ---
-        const hashPin = async (pin) => {
-            const msgBuffer = new TextEncoder().encode(pin + "now_2024_salt");
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        };
 
         // --- Screen Management ---
         const screens = document.querySelectorAll('.screen');
@@ -813,69 +822,119 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             nav.addEventListener('click', () => showScreen(nav.dataset.target));
         });
 
-        // --- Login ---
-        document.getElementById('btn-login').addEventListener('click', () => {
-            const username = document.getElementById('login-username').value.trim();
-            if(username) {
-                saveState('user', { username, pinHash: null });
-                showScreen('screen-pin-setup');
-            }
-        });
-
-        // --- PIN Logic ---
+        // --- Auth System (Supabase) ---
         let pinBuffer = '';
+
         const handleNumpad = async (val, mode) => {
-            if(val === 'del') {
+            if (val === 'del') {
                 pinBuffer = pinBuffer.slice(0, -1);
-            } else if(pinBuffer.length < 4) {
+            } else if (pinBuffer.length < 4) {
                 pinBuffer += val;
             }
-            
+
             const dots = document.getElementById(`${mode}-dots`).children;
-            for(let i=0; i<4; i++) {
-                if(i < pinBuffer.length) dots[i].classList.add('filled');
+            for (let i = 0; i < 4; i++) {
+                if (i < pinBuffer.length) dots[i].classList.add('filled');
                 else dots[i].classList.remove('filled');
             }
 
-            if(pinBuffer.length === 4) {
-                const hashed = await hashPin(pinBuffer);
-                if(mode === 'setup') {
-                    state.user.pinHash = hashed;
-                    saveState('user', state.user);
+            if (pinBuffer.length === 4) {
+                let email = getUserEmail();
+
+                if (mode === 'setup') {
+                    if (!email) {
+                        email = prompt("Enter your email:");
+                        if (!email) return;
+                    }
+
+                    const { error } = await supabase.auth.signUp({
+                        email,
+                        password: pinBuffer
+                    });
+
+                    if (error && !error.message.includes("already")) {
+                        alert(error.message);
+                        pinBuffer = '';
+                        return;
+                    }
+
+                    setUserEmail(email);
                     pinBuffer = '';
                     checkCheckin();
-                } else if(mode === 'entry') {
-                    if(hashed === state.user.pinHash) {
-                        pinBuffer = '';
-                        checkCheckin();
-                    } else {
+                }
+
+                if (mode === 'entry') {
+                    if (!email) {
+                        alert("No account found");
+                        return;
+                    }
+
+                    const { error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password: pinBuffer
+                    });
+
+                    if (error) {
                         const dotsContainer = document.getElementById('entry-dots');
                         dotsContainer.classList.add('shake');
-                        document.getElementById('entry-subtext').textContent = 'Try again';
-                        document.getElementById('entry-subtext').classList.add('text-danger');
+
                         setTimeout(() => {
                             dotsContainer.classList.remove('shake');
                             pinBuffer = '';
-                            for(let i=0; i<4; i++) dots[i].classList.remove('filled');
+                            for (let i = 0; i < 4; i++) dots[i].classList.remove('filled');
                         }, 400);
+                        return;
                     }
+
+                    pinBuffer = '';
+                    checkCheckin();
                 }
             }
         };
 
+        // --- NUMPAD EVENTS ---
         document.querySelectorAll('#setup-numpad .numpad-btn').forEach(btn => {
-            if(btn.dataset.val) btn.addEventListener('click', () => handleNumpad(btn.dataset.val, 'setup'));
-        });
-        document.querySelectorAll('#entry-numpad .numpad-btn').forEach(btn => {
-            if(btn.dataset.val) btn.addEventListener('click', () => handleNumpad(btn.dataset.val, 'entry'));
+            if (btn.dataset.val) btn.addEventListener('click', () => handleNumpad(btn.dataset.val, 'setup'));
         });
 
-        document.getElementById('btn-signout').addEventListener('click', () => {
-            Object.keys(localStorage).forEach(k => {
-                if(k.startsWith('now_')) localStorage.removeItem(k);
-            });
-            location.reload();
+        document.querySelectorAll('#entry-numpad .numpad-btn').forEach(btn => {
+            if (btn.dataset.val) btn.addEventListener('click', () => handleNumpad(btn.dataset.val, 'entry'));
         });
+
+        // --- SIGN OUT ---
+        const setupSignout = () => {
+            const btn = document.getElementById('btn-signout');
+            if(btn) {
+                btn.onclick = async () => {
+                    await supabase.auth.signOut();
+                    localStorage.clear();
+                    location.reload();
+                };
+            }
+            
+            const btnPre = document.getElementById('btn-signout-pre');
+            if(btnPre) {
+                btnPre.onclick = () => {
+                    localStorage.removeItem('now_email');
+                    location.reload();
+                };
+            }
+        };
+
+        const checkCheckin = () => {
+            const today = getTodayStr();
+            const doneToday = state.checkins.some(c => c.date === today);
+            if (!doneToday) {
+                checkinStep = 0;
+                checkinAnswers = {};
+                showScreen('screen-checkin');
+                renderCheckinStep();
+            } else {
+                showDailyAdvice();
+                showScreen('screen-main');
+                checkEveningReflection();
+            }
+        };
 
         // --- Daily Check-in ---
         const checkinQuestions = [
@@ -2143,19 +2202,24 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         }, 60000);
 
         // --- Init Flow ---
-        const init = () => {
+        const init = async () => {
             isFocusActive = false;
             document.getElementById('overlay-distraction').classList.add('hidden');
             
-            if(!state.user) {
-                showScreen('screen-login');
-            } else if(!state.user.pinHash) {
-                showScreen('screen-pin-setup');
+            const { data } = await supabase.auth.getSession();
+            
+            if (data.session) {
+                checkCheckin();
             } else {
-                document.getElementById('entry-greeting').textContent = `Hey ${state.user.username}.`;
-                showScreen('screen-pin-entry');
+                const email = getUserEmail();
+                if (email) {
+                    showScreen('screen-pin-entry');
+                } else {
+                    showScreen('screen-login');
+                }
             }
             getNextQuickReset();
+            setupSignout();
         };
 
         const showDailyAdvice = () => {
@@ -2168,22 +2232,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     document.getElementById('overlay-advice').classList.add('hidden');
                     sessionStorage.setItem('shown_advice_today', 'true');
                 };
-            }
-        };
-
-        // Inject showDailyAdvice into the checkin complete flow
-        const checkCheckin = () => {
-            const today = getTodayStr();
-            const doneToday = state.checkins.some(c => c.date === today);
-            if(!doneToday) {
-                checkinStep = 0;
-                checkinAnswers = {};
-                showScreen('screen-checkin');
-                renderCheckinStep();
-            } else {
-                showDailyAdvice();
-                showScreen('screen-main');
-                checkEveningReflection();
             }
         };
         
