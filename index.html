@@ -33,26 +33,38 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             --warn-bg: #FEF3C7;
             --danger: #DC2626;
             --danger-bg: #FEE2E2;
-            
             --radius-card: 16px;
             --radius-input: 10px;
             --radius-pill: 50px;
-            
-            --font-sans: 'DM Sans', sans-serif;
-            --font-serif: 'DM Serif Display', serif;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.08);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            font-family: var(--font-sans);
-            background-color: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            background-color: #e5e5e5;
             color: var(--text-primary);
             line-height: 1.5;
-            min-height: 100vh;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
+
+        h1, h2, .font-serif {
+            font-family: 'DM Serif Display', serif;
+        }
+
+        h1 { font-size: 28px; }
+        h2 { font-size: 21px; }
+        h3 { font-size: 17px; font-weight: 600; }
+        p { font-size: 15px; }
+        .small { font-size: 13px; }
 
         #app-container {
             width: 100%;
@@ -66,246 +78,332 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             transition: max-width 0.3s ease;
         }
 
-        /* Typography */
-        h1, .font-serif { font-family: var(--font-serif); }
-        h1 { font-size: 28px; font-weight: normal; }
-        h2 { font-size: 21px; font-weight: normal; font-family: var(--font-serif); }
-        h3 { font-size: 17px; font-weight: 600; }
-        p { font-size: 15px; }
-        .small { font-size: 13px; color: var(--text-secondary); }
-        .text-center { text-align: center; }
-        .text-muted { color: var(--text-muted); }
-        .text-secondary { color: var(--text-secondary); }
-        .text-white { color: #fff; }
-        .text-danger { color: var(--danger); }
-
-        /* Screens */
         .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 24px;
+            overflow-y: auto;
+            padding-bottom: 100px;
+            transition: opacity 280ms ease, transform 280ms ease;
             display: flex;
             flex-direction: column;
-            padding: 24px;
-            flex-grow: 1;
-            transition: opacity 280ms ease, transform 280ms ease;
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            overflow-y: auto;
-            background-color: var(--bg);
-            z-index: 1;
-            padding-bottom: 84px;
         }
-        .screen.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; z-index: 0; }
 
-        #screen-focus { background-color: var(--accent); color: white; padding-bottom: 24px; }
-        #screen-breathe { background-color: #ffffff; padding-bottom: 24px; }
-
-        /* Nav */
-        #bottom-nav {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 440px; height: 60px;
-            background: rgba(249, 247, 243, 0.8); backdrop-filter: blur(10px);
-            display: flex; justify-content: space-around; align-items: center;
-            z-index: 100; border-top: 1px solid rgba(0,0,0,0.05);
-            transition: transform 280ms ease;
+        .screen.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            display: none;
         }
-        #bottom-nav.hidden { transform: translate(-50%, 100%); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 11px; gap: 4px; padding: 8px; cursor: pointer; }
-        .nav-item.active { color: var(--accent); }
 
-        /* Forms & Buttons */
-        input[type="text"], input[type="time"], input[type="date"] {
-            width: 100%; padding: 14px 16px; border-radius: var(--radius-input);
-            border: 1px solid rgba(0,0,0,0.1); font-family: inherit; font-size: 15px;
-            margin-bottom: 16px; background: var(--card-bg); outline: none;
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
         }
-        input:focus { border-color: var(--accent); }
-        
+
+        .gradient-card {
+            background: linear-gradient(135deg, var(--accent) 0%, #7C74F2 100%);
+            color: white;
+            border: none;
+        }
+
         button {
-            width: 100%; min-height: 48px; border-radius: var(--radius-pill); border: none;
-            background: var(--accent); color: white; font-family: inherit; font-size: 15px; font-weight: 500;
-            cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: transform 0.1s, opacity 0.2s;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-pill);
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            width: 100%;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:active { transform: scale(0.98); }
-        button.secondary { background: var(--accent-soft); color: var(--accent); }
-        button.text { background: transparent; color: var(--text-secondary); }
-        button.white { background: white; color: var(--accent); }
-        button.big-tap { background: var(--card-bg); color: var(--text-primary); border: 1px solid rgba(0,0,0,0.08); font-size: 17px; justify-content: flex-start; padding: 0 20px; border-radius: var(--radius-card); margin-bottom: 12px; min-height: 64px; }
-        button.big-tap:focus, button.big-tap:active { border-color: var(--accent); background: var(--accent-soft); }
 
-        .pill-btn {
-            background: var(--card-bg); border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-pill);
-            padding: 8px 16px; font-size: 13px; color: var(--text-secondary); cursor: pointer;
+        button:active { transform: scale(0.98); filter: brightness(1.1); }
+        button.secondary { background-color: var(--accent-soft); color: var(--accent); }
+        button.white { background-color: white; color: var(--text-primary); }
+        button.text { background: transparent; color: var(--text-secondary); width: auto; padding: 8px; min-height: auto; }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 20px;
         }
-        .pill-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        /* Cards */
-        .card { background: var(--card-bg); border-radius: var(--radius-card); padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08); margin-bottom: 16px; }
-        .gradient-card { background: linear-gradient(135deg, #5B52E8 0%, #3B33AA 100%); color: white; }
+        input, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: var(--radius-input);
+            border: 1px solid rgba(0,0,0,0.1);
+            font-family: inherit;
+            font-size: 15px;
+            background: var(--card-bg);
+            outline: none;
+            transition: border-color 0.2s;
+        }
 
-        /* Layout Utils */
+        input:focus, textarea:focus { border-color: var(--accent); }
+
         .flex { display: flex; }
         .flex-col { display: flex; flex-direction: column; }
         .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
         .justify-center { justify-content: center; }
-        .gap-16 { gap: 16px; }
-        .gap-12 { gap: 12px; }
+        .justify-between { justify-content: space-between; }
         .gap-8 { gap: 8px; }
-        .gap-4 { gap: 4px; }
-        .mt-auto { margin-top: auto; }
-        .mt-24 { margin-top: 24px; }
-        .mt-16 { margin-top: 16px; }
-        .mt-8 { margin-top: 8px; }
-        .mb-24 { margin-bottom: 24px; }
-        .mb-16 { margin-bottom: 16px; }
+        .gap-12 { gap: 12px; }
+        .gap-16 { gap: 16px; }
+        .gap-24 { gap: 24px; }
         .mb-8 { margin-bottom: 8px; }
+        .mb-12 { margin-bottom: 12px; }
+        .mb-16 { margin-bottom: 16px; }
+        .mb-24 { margin-bottom: 24px; }
+        .mb-32 { margin-bottom: 32px; }
+        .mt-8 { margin-top: 8px; }
+        .mt-16 { margin-top: 16px; }
+        .mt-24 { margin-top: 24px; }
+        .mt-32 { margin-top: 32px; }
+        .mt-auto { margin-top: auto; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+        .text-danger { color: var(--danger); }
         .w-full { width: 100%; }
 
-        /* Numpad */
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 280px; margin: 0 auto; }
-        .numpad-btn { background: var(--card-bg); border-radius: 50%; width: 64px; height: 64px; font-size: 24px; color: var(--text-primary); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center; cursor: pointer; margin: 0 auto; }
+        .dots { display: flex; gap: 12px; margin-bottom: 32px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--accent-soft); }
+        .dot.filled { background-color: var(--accent); border-color: var(--accent); }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 280px;
+        }
+        .numpad-btn {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 500;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
         .numpad-btn:active { background: var(--accent-soft); }
-        .dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; }
-        .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent); }
-        .dot.filled { background: var(--accent); }
-        .shake { animation: shake 0.4s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
 
-        /* Overlays */
-        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 200; display: flex; justify-content: center; align-items: center; padding: 24px; opacity: 1; transition: opacity 280ms ease, visibility 280ms ease; visibility: visible; }
-        .overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
-        .nudge { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(0); width: calc(100% - 48px); max-width: 392px; background: var(--card-bg); border-radius: var(--radius-card); padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); z-index: 300; display: flex; align-items: center; gap: 12px; transition: transform 280ms ease, opacity 280ms ease; }
-        .nudge.hidden { transform: translateX(-50%) translateY(100px); opacity: 0; pointer-events: none; }
+        .progress-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; }
+        .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-soft); }
+        .progress-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
 
-        /* Timer */
-        .timer-text { font-size: 72px; font-weight: 300; font-variant-numeric: tabular-nums; margin: 24px 0; }
-        
-        /* Breathing Circle */
-        .breathe-circle { width: 200px; height: 200px; border-radius: 50%; background: var(--accent-soft); margin: 40px auto; transition: transform 1s linear; display: flex; justify-content: center; align-items: center; color: var(--accent); font-weight: 500; font-size: 18px; }
+        .big-tap {
+            padding: 24px;
+            text-align: left;
+            justify-content: flex-start;
+            font-size: 17px;
+            margin-bottom: 12px;
+            background: white;
+            color: var(--text-primary);
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
-        /* Task Items */
-        .task-row { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--card-bg); border-radius: var(--radius-input); margin-bottom: 8px; border: 1px solid rgba(0,0,0,0.05); }
-        .task-row.done { opacity: 0.5; text-decoration: line-through; }
-        .checkbox { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--text-muted); display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; }
-        .task-row.done .checkbox { background: var(--success); border-color: var(--success); }
-        .task-row.done .checkbox::after { content: '✓'; color: white; font-size: 14px; }
-        .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
-        .task-actions { margin-left: auto; display: flex; gap: 8px; }
-        .icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--text-muted); width: 24px; height: 24px; min-height: auto; padding: 0; }
+        #bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 440px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            padding: 8px 0;
+        }
+        .nav-item.active { color: var(--accent); }
 
-        /* Quick Reminders Strip */
-        .reminders-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+        .streak-badge {
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .task-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: white;
+            border-radius: var(--radius-card);
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 8px;
+        }
+        .task-row.done { opacity: 0.5; }
+        .task-row.done div { text-decoration: line-through; }
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid var(--accent-soft);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .checkbox.checked { background: var(--accent); border-color: var(--accent); }
+        .checkbox.checked::after { content: '✓'; color: white; font-size: 14px; }
+
+        .reminders-strip {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
         .reminders-strip::-webkit-scrollbar { display: none; }
-        .reminder-chip { background: var(--card-bg); border: 1px solid rgba(0,0,0,0.08); padding: 8px 12px; border-radius: var(--radius-pill); display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; cursor: pointer; }
+        .reminder-chip {
+            background: white;
+            padding: 10px 16px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(0,0,0,0.08);
+            white-space: nowrap;
+            font-size: 14px;
+            cursor: pointer;
+        }
 
-        /* Floating Button */
-        .fab { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: white; font-size: 28px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(91, 82, 232, 0.4); cursor: pointer; z-index: 90; transition: transform 0.2s; border: none; }
-        .fab:active { transform: scale(0.9); }
+        #fab-add {
+            position: fixed;
+            bottom: 85px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(91, 82, 232, 0.4);
+            cursor: pointer;
+            z-index: 90;
+        }
 
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .streak-badge { background: var(--warn-bg); color: var(--warn); padding: 4px 10px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            backdrop-filter: blur(4px);
+        }
 
-        /* Progress dots */
-        .progress-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
-        .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); opacity: 0.3; }
-        .progress-dot.active { opacity: 1; background: var(--accent); }
+        .breathe-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            color: var(--accent);
+            font-weight: 600;
+        }
 
-        .confetti { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 64px; pointer-events: none; z-index: 1000; animation: pop 1s ease-out forwards; }
-        @keyframes pop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -150%) scale(1.5); opacity: 0; } }
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
 
-        .sheet { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 440px; background: var(--bg); border-radius: 24px 24px 0 0; padding: 24px; z-index: 250; transition: transform 300ms ease; box-shadow: 0 -4px 24px rgba(0,0,0,0.1); }
-        .sheet.open { transform: translateX(-50%) translateY(0); }
-        .sheet-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 240; opacity: 0; pointer-events: none; transition: opacity 300ms ease; }
-        .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
-        
-        .emoji-picker { display: flex; gap: 12px; margin-bottom: 16px; font-size: 24px; }
-        .emoji-btn { background: none; border: none; padding: 4px; cursor: pointer; min-height: auto; border-radius: 8px; }
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            width: 100%;
+            max-width: 440px;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            z-index: 200;
+            transition: transform 0.3s ease-out;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+        }
+        .bottom-sheet.open { transform: translateX(-50%) translateY(0); }
+
+        .pill-btn {
+            background: var(--bg);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .pill-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+        .emoji-picker { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; }
+        .emoji-btn { font-size: 24px; background: transparent; border: none; cursor: pointer; padding: 8px; border-radius: 12px; }
         .emoji-btn.selected { background: var(--accent-soft); }
 
-            textarea.note-content {
-                width: 100%;
-                min-height: 120px;
-                padding: 14px 16px;
-                border-radius: var(--radius-input);
-                border: 1px solid rgba(0,0,0,0.1);
-                font-family: inherit;
-                font-size: 15px;
-                background: var(--card-bg);
-                outline: none;
-                resize: vertical;
-                margin-bottom: 8px;
-            }
-            textarea.note-content:focus {
-                border-color: var(--accent);
-            }
-            
-            .note-title-input {
-                width: 100%;
-                font-size: 17px;
-                font-weight: 600;
-                border: none;
-                background: transparent;
-                outline: none;
-                margin-bottom: 8px;
-                color: var(--text-primary);
-            }
-            
-            .mental-card {
-                background: var(--card-bg);
-                border-radius: var(--radius-card);
-                padding: 20px;
-                border: 1px solid rgba(0,0,0,0.08);
-            }
-            .mental-step {
-                display: flex;
-                gap: 12px;
-                margin-top: 12px;
-            }
-            .step-num {
-                background: var(--accent-soft);
-                color: var(--accent);
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 13px;
-                font-weight: 600;
-                flex-shrink: 0;
-            }
-        /* Bubble Pop Animation */
-        @keyframes popBubble {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-            100% { transform: scale(0); opacity: 0; }
-        }
-        .bubble {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(91, 82, 232, 0.6));
-            box-shadow: 0 4px 12px rgba(91, 82, 232, 0.2), inset 0 0 10px rgba(255,255,255,0.5);
-            position: absolute;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .bubble.popped {
-            animation: popBubble 0.3s forwards;
-            pointer-events: none;
-        }
-        
-        /* Release Tool Animation */
-        @keyframes dissolveText {
-            0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-            50% { opacity: 0.5; transform: translateY(-20px) scale(1.05); filter: blur(4px); }
-            100% { opacity: 0; transform: translateY(-40px) scale(1.1); filter: blur(10px); }
-        }
-        .dissolve {
-            animation: dissolveText 2s forwards;
-        }
-        
         /* Focus Tools Enhancements */
         .bubble-ripple {
             position: absolute;
@@ -342,6 +440,37 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         }
         .feedback-pop { animation: feedbackPop 0.3s ease-out; }
 
+        /* Bubble Pop Animation */
+        @keyframes popBubble {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .bubble {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(91, 82, 232, 0.6));
+            box-shadow: 0 4px 12px rgba(91, 82, 232, 0.2), inset 0 0 10px rgba(255,255,255,0.5);
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .bubble.popped {
+            animation: popBubble 0.3s forwards;
+            pointer-events: none;
+        }
+        
+        /* Release Tool Animation */
+        @keyframes dissolveText {
+            0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+            50% { opacity: 0.5; transform: translateY(-20px) scale(1.05); filter: blur(4px); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.1); filter: blur(10px); }
+        }
+        .dissolve {
+            animation: dissolveText 2s forwards;
+        }
+        
         /* Desktop Optimization */
         @media (min-width: 900px) {
             #app-container {
@@ -390,11 +519,10 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             #checkin-container { max-width: 500px; margin: 0 auto; width: 100%; justify-content: center; }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="app-container">
-
+        
         <!-- Screen: Login -->
         <div id="screen-login" class="screen flex-col items-center justify-center hidden">
             <h1 class="mb-8 text-center">NOW</h1>
@@ -438,11 +566,11 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         </div>
 
         <!-- Screen: Daily Check-in -->
-        <div id="screen-checkin" class="screen flex-col hidden">
+        <div id="screen-checkin" class="screen flex-col items-center hidden">
             <div class="progress-dots" id="checkin-progress">
                 <div class="progress-dot active"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div>
             </div>
-            <div id="checkin-container" class="flex-col flex-grow">
+            <div id="checkin-container" class="flex-col w-full">
                 <!-- Injected via JS -->
             </div>
         </div>
@@ -479,29 +607,26 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         </div>
 
         <!-- Screen: Focus Mode -->
-        <div id="screen-focus" class="screen flex-col items-center justify-center hidden">
-            <p class="small text-white mb-24 text-center" style="opacity: 0.7;" id="focus-task-name">Task Name</p>
-            <div class="timer-text" id="focus-timer">25:00</div>
-            <p class="small text-white mb-24" style="opacity: 0.7;">focus session</p>
-            
+        <div id="screen-focus" class="screen flex-col items-center justify-center hidden" style="background: var(--accent); color: white;">
+            <p class="small mb-16" style="opacity: 0.7;" id="focus-task-name">Task Name</p>
+            <div style="font-size: 72px; font-weight: 200; margin-bottom: 8px;" id="focus-timer">25:00</div>
+            <p class="small mb-48" style="opacity: 0.8; letter-spacing: 2px;">focus session</p>
             <button class="white mb-16" id="btn-focus-done" style="max-width: 200px; color: var(--accent);">Done ✓</button>
-            <button class="text text-white" id="btn-focus-break" style="width: auto; min-height: auto; opacity: 0.8;">Need a break</button>
+            <button class="text text-white small" id="btn-focus-break" style="width:auto; min-height:auto;">Need a break</button>
         </div>
 
         <!-- Screen: Breathing Break -->
         <div id="screen-breathe" class="screen flex-col items-center justify-center hidden">
             <h2 class="mb-8">Take a breath.</h2>
-            <p class="small text-secondary mb-24">Just 60 seconds. Then back to it.</p>
-            
+            <p class="small text-secondary mb-48">Just 60 seconds. Then back to it.</p>
             <div class="breathe-circle" id="breathe-circle">Breathe in...</div>
-            
-            <button class="secondary mt-auto" id="btn-breathe-back">I'm ready, back to work</button>
+            <p class="small text-secondary mt-32" id="breathe-label">Loop 1/2</p>
+            <button class="mt-48" id="btn-breathe-ready" style="max-width: 200px;">I'm ready, back to work</button>
         </div>
 
         <!-- Screen: Tasks -->
         <div id="screen-tasks" class="screen hidden">
             <h1 class="mb-24">Your tasks</h1>
-            
             <div id="tasks-list" class="flex-col gap-8">
                 <!-- Injected via JS -->
             </div>
@@ -514,15 +639,15 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             
             <h3 class="mb-12">Quick Add</h3>
             <div class="flex gap-8 mb-24" style="flex-wrap: wrap;">
-                <div class="reminder-chip quick-add-chip">💧 Drink water</div>
-                <div class="reminder-chip quick-add-chip">📞 Make a call</div>
-                <div class="reminder-chip quick-add-chip">📧 Check emails</div>
-                <div class="reminder-chip quick-add-chip">🍎 Eat something</div>
-                <div class="reminder-chip quick-add-chip">💊 Take meds</div>
-                <div class="reminder-chip quick-add-chip">📖 Review notes</div>
+                <div class="reminder-chip" onclick="quickAddReminder('💧 Drink water', '⏰')">💧 Drink water</div>
+                <div class="reminder-chip" onclick="quickAddReminder('📞 Make a call', '📞')">📞 Make a call</div>
+                <div class="reminder-chip" onclick="quickAddReminder('📧 Check emails', '📧')">📧 Check emails</div>
+                <div class="reminder-chip" onclick="quickAddReminder('🍎 Eat something', '🍎')">🍎 Eat something</div>
+                <div class="reminder-chip" onclick="quickAddReminder('💊 Take meds', '💊')">💊 Take meds</div>
+                <div class="reminder-chip" onclick="quickAddReminder('📖 Review notes', '📖')">📖 Review notes</div>
             </div>
 
-            <h3 class="mb-12">Your Reminders</h3>
+            <h3 class="mb-12">All Reminders</h3>
             <div id="reminders-list" class="flex-col gap-8">
                 <!-- Injected via JS -->
             </div>
@@ -680,22 +805,23 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <div class="nav-item" data-target="screen-focus-tools"><span style="font-size: 20px;">🎯</span><span>Focus</span></div>
         </nav>
 
-        <!-- Floating Action Button -->
-        <button class="fab hidden" id="fab-add">+</button>
+        <!-- Floating Button -->
+        <div id="fab-add" class="hidden">+</div>
 
-        <!-- Add Sheet -->
-        <div class="sheet-backdrop" id="add-sheet-backdrop"></div>
-        <div class="sheet" id="add-sheet">
-            <div class="flex gap-16 mb-16 border-b" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px;">
-                <div class="tab-btn active" id="tab-task" style="font-weight:600; cursor:pointer;">Task</div>
-                <div class="tab-btn" id="tab-reminder" style="font-weight:600; cursor:pointer; color:var(--text-muted);">Reminder</div>
+        <!-- Bottom Sheet Form -->
+        <div id="add-sheet" class="bottom-sheet">
+            <div class="flex gap-16 mb-24">
+                <div class="pill-btn active" id="tab-add-task">Task</div>
+                <div class="pill-btn" id="tab-add-reminder">Reminder</div>
             </div>
-            
+
             <div id="form-task">
-                <input type="text" id="add-task-name" placeholder="Task name" autocomplete="off">
-                <input type="text" id="add-task-subject" placeholder="Subject (e.g. ML, Maths, Personal)" autocomplete="off">
-                <input type="date" id="add-task-date">
-                <div class="flex gap-8 mb-16" id="add-task-time-pills">
+                <input type="text" id="add-task-name" placeholder="What needs doing?" autocomplete="off" class="mb-16">
+                <input type="text" id="add-task-subject" placeholder="Subject (e.g. Maths, Personal)" autocomplete="off" class="mb-16">
+                <p class="small mb-8">Deadline (optional)</p>
+                <input type="date" id="add-task-deadline" class="mb-16">
+                <p class="small mb-8">Estimated time</p>
+                <div class="flex gap-8 mb-24" id="add-task-time">
                     <div class="pill-btn" data-val="15">15 min</div>
                     <div class="pill-btn active" data-val="30">30 min</div>
                     <div class="pill-btn" data-val="45">45 min</div>
@@ -751,6 +877,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
     <script>
         const SUPABASE_URL = "https://zgptpjaonkrowjitba.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_QOe3_erVAaW7Ond8pAH0bA_5tzvA8e1";
+
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // --- Email Storage Helpers ---
@@ -822,7 +949,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             nav.addEventListener('click', () => showScreen(nav.dataset.target));
         });
 
-        // --- Auth System (Supabase) ---
+        // --- PIN Logic ---
         let pinBuffer = '';
 
         const handleNumpad = async (val, mode) => {
@@ -901,26 +1028,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             if (btn.dataset.val) btn.addEventListener('click', () => handleNumpad(btn.dataset.val, 'entry'));
         });
 
-        // --- SIGN OUT ---
-        const setupSignout = () => {
-            const btn = document.getElementById('btn-signout');
-            if(btn) {
-                btn.onclick = async () => {
-                    await supabase.auth.signOut();
-                    localStorage.clear();
-                    location.reload();
-                };
-            }
-            
-            const btnPre = document.getElementById('btn-signout-pre');
-            if(btnPre) {
-                btnPre.onclick = () => {
-                    localStorage.removeItem('now_email');
-                    location.reload();
-                };
-            }
-        };
-
         const checkCheckin = () => {
             const today = getTodayStr();
             const doneToday = state.checkins.some(c => c.date === today);
@@ -976,8 +1083,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                 });
             });
         };
-
-       
 
         // --- Smart Task Selection Logic ---
         let currentSuggestedTaskIndex = 0;
@@ -1429,9 +1534,13 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         const getNextQuickReset = () => {
             const currentText = document.getElementById('quick-reset-text').textContent;
             let nextMsg;
-            do {
+            if(!currentText) {
                 nextMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
-            } while (nextMsg === currentText);
+            } else {
+                do {
+                    nextMsg = mentalAdviceMessages[Math.floor(Math.random() * mentalAdviceMessages.length)];
+                } while (nextMsg === currentText);
+            }
             document.getElementById('quick-reset-text').textContent = nextMsg;
         };
 
@@ -1816,321 +1925,255 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         };
 
         // --- Bottom Sheet & Add Logic ---
-        const addSheet = document.getElementById('add-sheet');
-        const addBackdrop = document.getElementById('add-sheet-backdrop');
-        const tabTask = document.getElementById('tab-task');
-        const tabReminder = document.getElementById('tab-reminder');
-        const formTask = document.getElementById('form-task');
-        const formReminder = document.getElementById('form-reminder');
-
-        fab.addEventListener('click', () => {
-            addSheet.classList.add('open');
-            addBackdrop.classList.add('open');
-        });
-
-        addBackdrop.addEventListener('click', () => {
-            addSheet.classList.remove('open');
-            addBackdrop.classList.remove('open');
-        });
-
-        tabTask.addEventListener('click', () => {
-            tabTask.classList.add('active'); tabTask.style.color = '';
-            tabReminder.classList.remove('active'); tabReminder.style.color = 'var(--text-muted)';
-            formTask.classList.remove('hidden'); formReminder.classList.add('hidden');
-        });
+        const sheet = document.getElementById('add-sheet');
         
-        tabReminder.addEventListener('click', () => {
-            tabReminder.classList.add('active'); tabReminder.style.color = '';
-            tabTask.classList.remove('active'); tabTask.style.color = 'var(--text-muted)';
-            formReminder.classList.remove('hidden'); formTask.classList.add('hidden');
+        fab.addEventListener('click', () => {
+            sheet.classList.add('open');
         });
 
-        let selectedTaskTime = 30;
-        document.querySelectorAll('#add-task-time-pills .pill-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#add-task-time-pills .pill-btn').forEach(b => b.classList.remove('active'));
+        document.addEventListener('mousedown', (e) => {
+            if(!sheet.contains(e.target) && !fab.contains(e.target)) {
+                sheet.classList.remove('open');
+            }
+        });
+
+        document.getElementById('tab-add-task').onclick = () => {
+            document.getElementById('tab-add-task').classList.add('active');
+            document.getElementById('tab-add-reminder').classList.remove('active');
+            document.getElementById('form-task').classList.remove('hidden');
+            document.getElementById('form-reminder').classList.add('hidden');
+        };
+
+        document.getElementById('tab-add-reminder').onclick = () => {
+            document.getElementById('tab-add-reminder').classList.add('active');
+            document.getElementById('tab-add-task').classList.remove('active');
+            document.getElementById('form-reminder').classList.remove('hidden');
+            document.getElementById('form-task').classList.add('hidden');
+        };
+
+        document.querySelectorAll('#add-task-time .pill-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('#add-task-time .pill-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                selectedTaskTime = parseInt(btn.dataset.val);
-            });
-        });
-
-        document.getElementById('btn-submit-task').addEventListener('click', () => {
-            const name = document.getElementById('add-task-name').value.trim();
-            if(!name) return;
-            const task = {
-                id: 't_' + Date.now(),
-                name,
-                subject: document.getElementById('add-task-subject').value.trim(),
-                deadline: document.getElementById('add-task-date').value,
-                estimatedMins: selectedTaskTime,
-                done: false,
-                doneAt: null,
-                createdAt: new Date().toISOString()
             };
-            saveState('tasks', [...state.tasks, task]);
-            
-            document.getElementById('add-task-name').value = '';
-            addSheet.classList.remove('open'); addBackdrop.classList.remove('open');
-            if(currentScreen === 'screen-main') renderMain();
-            if(currentScreen === 'screen-tasks') renderTasks();
         });
 
-        let selectedEmoji = '💡';
         document.querySelectorAll('.emoji-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.onclick = () => {
                 document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
-                selectedEmoji = btn.textContent;
-            });
+            };
         });
 
-        document.getElementById('btn-submit-reminder').addEventListener('click', () => {
+        document.getElementById('btn-submit-task').onclick = () => {
+            const name = document.getElementById('add-task-name').value.trim();
+            if(!name) return;
+            const subject = document.getElementById('add-task-subject').value.trim();
+            const deadline = document.getElementById('add-task-deadline').value;
+            const mins = parseInt(document.querySelector('#add-task-time .pill-btn.active').dataset.val);
+
+            const newTask = {
+                id: 't_' + Date.now(),
+                name, subject, deadline, estimatedMins: mins,
+                done: false, createdAt: new Date().toISOString()
+            };
+
+            saveState('tasks', [newTask, ...state.tasks]);
+            sheet.classList.remove('open');
+            document.getElementById('add-task-name').value = '';
+            document.getElementById('add-task-subject').value = '';
+            renderMain();
+            renderTasks();
+        };
+
+        document.getElementById('btn-submit-reminder').onclick = async () => {
             const text = document.getElementById('add-reminder-text').value.trim();
             if(!text) return;
+            const emoji = document.querySelector('.emoji-btn.selected').textContent;
             const time = document.getElementById('add-reminder-time').value;
-            
-            if(time && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-                Notification.requestPermission();
+
+            if(time && Notification.permission !== 'granted') {
+                await Notification.requestPermission();
             }
 
-            const reminder = {
+            const newRem = {
                 id: 'r_' + Date.now(),
-                emoji: selectedEmoji,
-                text,
-                time,
-                notified: false
+                emoji, text, time, notified: false
             };
-            saveState('reminders', [...state.reminders, reminder]);
-            
+
+            saveState('reminders', [newRem, ...state.reminders]);
+            sheet.classList.remove('open');
             document.getElementById('add-reminder-text').value = '';
-            document.getElementById('add-reminder-time').value = '';
-            addSheet.classList.remove('open'); addBackdrop.classList.remove('open');
-            if(currentScreen === 'screen-main') renderMain();
-            if(currentScreen === 'screen-reminders') renderReminders();
-        });
+            renderMain();
+            renderReminders();
+        };
 
-        document.querySelectorAll('.quick-add-chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                const parts = chip.textContent.split(' ');
-                const emoji = parts[0];
-                const text = parts.slice(1).join(' ');
-                saveState('reminders', [...state.reminders, { id: 'r_' + Date.now(), emoji, text, time: '', notified: false }]);
-                renderReminders();
-                if(currentScreen === 'screen-main') renderMain();
-            });
-        });
-
-
-        // --- Focus Mode ---
-        let focusTimerInterval;
-        let focusTimeRemaining = 25 * 60;
+        // --- Focus Mode Logic ---
         let currentFocusTaskId = null;
+        let focusTimerInterval = null;
+        let focusTimeLeft = 1500;
         let isFocusActive = false;
 
         window.startFocus = (taskId) => {
             currentFocusTaskId = taskId;
             const task = state.tasks.find(t => t.id === taskId);
-            document.getElementById('focus-task-name').textContent = task ? task.name : 'Focus Session';
-            focusTimeRemaining = 25 * 60;
-            updateFocusTimerDisplay();
+            document.getElementById('focus-task-name').textContent = task.name;
+            document.getElementById('distraction-task-name').textContent = task.name;
+            
             isFocusActive = true;
+            focusTimeLeft = 1500;
+            updateFocusDisplay();
             showScreen('screen-focus');
             
-            clearInterval(focusTimerInterval);
             focusTimerInterval = setInterval(() => {
-                if(focusTimeRemaining > 0) {
-                    focusTimeRemaining--;
-                    updateFocusTimerDisplay();
-                } else {
+                focusTimeLeft--;
+                updateFocusDisplay();
+                if(focusTimeLeft <= 0) {
                     clearInterval(focusTimerInterval);
-                    // Timer done logic
-                    isFocusActive = false;
+                    alert("Time's up! Take a break or mark as done.");
                 }
             }, 1000);
         };
 
-        const updateFocusTimerDisplay = () => {
-            const m = Math.floor(focusTimeRemaining / 60).toString().padStart(2, '0');
-            const s = (focusTimeRemaining % 60).toString().padStart(2, '0');
-            document.getElementById('focus-timer').textContent = `${m}:${s}`;
+        const updateFocusDisplay = () => {
+            const m = Math.floor(focusTimeLeft / 60);
+            const s = focusTimeLeft % 60;
+            document.getElementById('focus-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
         };
 
-        document.getElementById('btn-focus-done').addEventListener('click', () => {
+        document.getElementById('btn-focus-done').onclick = () => {
             clearInterval(focusTimerInterval);
             isFocusActive = false;
-            if(currentFocusTaskId) toggleTask(currentFocusTaskId);
-            
-            // Win animation
-            const conf = document.createElement('div');
-            conf.className = 'confetti';
-            conf.textContent = '🎉';
-            document.body.appendChild(conf);
-            setTimeout(() => conf.remove(), 1000);
+            toggleTask(currentFocusTaskId);
+            showScreen('screen-main');
+        };
 
-            setTimeout(() => {
-                showScreen('screen-main');
-            }, 1200);
-        });
-
-        document.getElementById('btn-focus-break').addEventListener('click', () => {
+        document.getElementById('btn-focus-break').onclick = () => {
             clearInterval(focusTimerInterval);
-            isFocusActive = false;
             showScreen('screen-breathe');
-            startBreatheAnimation();
-        });
+            startBreatheBreak();
+        };
 
-        // Distraction Detection
+        // Distraction Logic
         document.addEventListener('visibilitychange', () => {
-            if(document.visibilityState === 'hidden' && isFocusActive) {
-                const task = state.tasks.find(t => t.id === currentFocusTaskId);
-                document.getElementById('distraction-task-name').textContent = task ? task.name : 'Task';
+            if (document.hidden && isFocusActive) {
                 document.getElementById('overlay-distraction').classList.remove('hidden');
-                clearInterval(focusTimerInterval);
             }
         });
 
-        document.getElementById('btn-distraction-back').addEventListener('click', () => {
+        document.getElementById('btn-distraction-back').onclick = () => {
             document.getElementById('overlay-distraction').classList.add('hidden');
-            focusTimerInterval = setInterval(() => {
-                if(focusTimeRemaining > 0) {
-                    focusTimeRemaining--;
-                    updateFocusTimerDisplay();
-                }
-            }, 1000);
-        });
-        
-        document.getElementById('btn-distraction-done').addEventListener('click', () => {
+        };
+
+        document.getElementById('btn-distraction-done').onclick = () => {
             document.getElementById('overlay-distraction').classList.add('hidden');
             document.getElementById('btn-focus-done').click();
-        });
+        };
 
+        // --- Breathe Break Logic ---
+        let breatheLoop = 1;
+        let breatheInterval = null;
 
-        // --- Breathing ---
-        let breathePhase = 0; // 0: in (4s), 1: hold (7s), 2: out (8s)
-        let breatheCycles = 0;
-        let breatheTimeout;
-
-        const startBreatheAnimation = () => {
-            breatheCycles = 0;
-            breathePhase = 0;
+        const startBreatheBreak = () => {
+            breatheLoop = 1;
             runBreatheCycle();
         };
 
         const runBreatheCycle = () => {
             const circle = document.getElementById('breathe-circle');
-            if(breathePhase === 0) {
-                circle.textContent = 'Breathe in...';
-                circle.style.transition = 'transform 4s linear';
-                circle.style.transform = 'scale(1.5)';
-                breatheTimeout = setTimeout(() => { breathePhase = 1; runBreatheCycle(); }, 4000);
-            } else if(breathePhase === 1) {
-                circle.textContent = 'Hold...';
-                circle.style.transition = 'transform 7s linear';
-                breatheTimeout = setTimeout(() => { breathePhase = 2; runBreatheCycle(); }, 7000);
-            } else if(breathePhase === 2) {
-                circle.textContent = 'Breathe out...';
-                circle.style.transition = 'transform 8s linear';
-                circle.style.transform = 'scale(1)';
-                breatheTimeout = setTimeout(() => { 
-                    breathePhase = 0; 
-                    breatheCycles++;
-                    if(breatheCycles < 2) runBreatheCycle();
-                    else {
-                        circle.textContent = 'Done.';
-                    }
-                }, 8000);
-            }
+            const label = document.getElementById('breathe-label');
+            label.textContent = `Loop ${breatheLoop}/2`;
+            
+            circle.textContent = "Breathe in...";
+            circle.style.transition = "transform 4s ease-in-out";
+            circle.style.transform = "scale(1.5)";
+            
+            setTimeout(() => {
+                circle.textContent = "Hold...";
+                setTimeout(() => {
+                    circle.textContent = "Breathe out...";
+                    circle.style.transform = "scale(1)";
+                    circle.style.transition = "transform 8s ease-in-out";
+                    
+                    setTimeout(() => {
+                        if(breatheLoop < 2) {
+                            breatheLoop++;
+                            runBreatheCycle();
+                        } else {
+                            circle.textContent = "Done.";
+                        }
+                    }, 8000);
+                }, 7000);
+            }, 4000);
         };
 
-        document.getElementById('btn-breathe-back').addEventListener('click', () => {
-            clearTimeout(breatheTimeout);
+        document.getElementById('btn-breathe-ready').onclick = () => {
             showScreen('screen-focus');
-            isFocusActive = true;
-            focusTimerInterval = setInterval(() => {
-                if(focusTimeRemaining > 0) {
-                    focusTimeRemaining--;
-                    updateFocusTimerDisplay();
-                }
-            }, 1000);
-        });
+            startFocus(currentFocusTaskId);
+        };
 
-
-        // --- Overlays (Evening & Nudge) ---
+        // --- Evening Reflection ---
         const checkEveningReflection = () => {
             const now = new Date();
-            if(now.getHours() >= 20) {
-                const today = getTodayStr();
-                const done = state.reflections.some(r => r.date === today);
-                if(!done) {
-                    setTimeout(showEveningReflection, 2000);
-                }
+            const today = getTodayStr();
+            const doneToday = state.reflections.some(r => r.date === today);
+            
+            if(now.getHours() >= 20 && !doneToday) {
+                setTimeout(() => {
+                    const overlay = document.getElementById('overlay-evening');
+                    const content = document.getElementById('evening-content');
+                    const nextTask = state.tasks.find(t => !t.done) || {name: "Plan your first task"};
+                    
+                    content.innerHTML = `
+                        <h2 class="mb-16">How did today actually go?</h2>
+                        <p class="small mb-16">Reflection helps you grow.</p>
+                        
+                        <p class="small mb-8">How did the day play out?</p>
+                        <div class="flex gap-8 mb-16" style="flex-wrap: wrap;">
+                            <div class="pill-btn active" data-ref="howItWent" data-val="Smooth ✨">Smooth ✨</div>
+                            <div class="pill-btn" data-ref="howItWent" data-val="Bumpy 🤕">Bumpy 🤕</div>
+                            <div class="pill-btn" data-ref="howItWent" data-val="Mixed 🎢">Mixed 🎢</div>
+                            <div class="pill-btn" data-ref="howItWent" data-val="Survival 🛡️">Survival 🛡️</div>
+                        </div>
+
+                        <p class="small mb-8">Did you do the thing you meant to?</p>
+                        <div class="flex gap-8 mb-24" style="flex-wrap: wrap;">
+                            <div class="pill-btn active" data-ref="onTrack" data-val="Yep ✅">Yep ✅</div>
+                            <div class="pill-btn" data-ref="onTrack" data-val="Some 🔄">Some 🔄</div>
+                            <div class="pill-btn" data-ref="onTrack" data-val="Not really 🌊">Not really 🌊</div>
+                        </div>
+
+                        <p class="small mb-8">First thing for tomorrow?</p>
+                        <input type="text" id="ref-tomorrow" placeholder="One word is fine." class="mb-24">
+                        
+                        <p class="small mb-16 text-muted">Next up: ${nextTask.name}</p>
+                        <button id="btn-save-reflection">Close</button>
+                    `;
+                    
+                    overlay.classList.remove('hidden');
+
+                    content.querySelectorAll('.pill-btn').forEach(btn => {
+                        btn.onclick = () => {
+                            content.querySelectorAll(`.pill-btn[data-ref="${btn.dataset.ref}"]`).forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                        };
+                    });
+
+                    document.getElementById('btn-save-reflection').onclick = () => {
+                        const reflection = {
+                            date: today,
+                            howItWent: content.querySelector('.pill-btn[data-ref="howItWent"].active').dataset.val,
+                            onTrack: content.querySelector('.pill-btn[data-ref="onTrack"].active').dataset.val,
+                            tomorrowFirst: document.getElementById('ref-tomorrow').value
+                        };
+                        saveState('reflections', [...state.reflections, reflection]);
+                        overlay.classList.add('hidden');
+                    };
+                }, 2000);
             }
         };
 
-        const showEveningReflection = () => {
-            const overlay = document.getElementById('overlay-evening');
-            const content = document.getElementById('evening-content');
-            
-            let phase = 1;
-            let answers = { date: getTodayStr() };
-
-            const renderPhase = () => {
-                if(phase === 1) {
-                    content.innerHTML = `
-                        <h2 class="mb-24">How did today actually go?</h2>
-                        <p class="mb-16">How did the day play out?</p>
-                        <button class="big-tap ev-opt" data-val="Smooth ✨">Smooth ✨</button>
-                        <button class="big-tap ev-opt" data-val="Bumpy 🤕">Bumpy 🤕</button>
-                        <button class="big-tap ev-opt" data-val="Mixed 🎢">Mixed 🎢</button>
-                        <button class="big-tap ev-opt" data-val="Survival mode 🛡️">Survival mode 🛡️</button>
-                    `;
-                } else if(phase === 2) {
-                    content.innerHTML = `
-                        <h2 class="mb-24">How did today actually go?</h2>
-                        <p class="mb-16">Did you do the thing you meant to?</p>
-                        <button class="big-tap ev-opt" data-val="Yep, mostly ✅">Yep, mostly ✅</button>
-                        <button class="big-tap ev-opt" data-val="Some of it 🔄">Some of it 🔄</button>
-                        <button class="big-tap ev-opt" data-val="Not really 🌊">Not really 🌊</button>
-                        <button class="big-tap ev-opt" data-val="Life happened 😅">Life happened 😅</button>
-                    `;
-                } else if(phase === 3) {
-                    content.innerHTML = `
-                        <h2 class="mb-24">Tomorrow</h2>
-                        <p class="mb-16">What's the first thing tomorrow should start with?</p>
-                        <input type="text" id="ev-tomorrow" placeholder="Even one word is fine." autocomplete="off">
-                        <button id="ev-next">Next</button>
-                    `;
-                    document.getElementById('ev-next').onclick = () => {
-                        answers.tomorrowFirst = document.getElementById('ev-tomorrow').value;
-                        phase = 4; renderPhase();
-                    };
-                } else if(phase === 4) {
-                    const incomplete = state.tasks.filter(t => !t.done).sort((a,b) => new Date(a.deadline||'2099') - new Date(b.deadline||'2099'));
-                    const firstTask = incomplete.length > 0 ? incomplete[0].name : 'Nothing urgent right now.';
-                    content.innerHTML = `
-                        <h2 class="mb-24">Got it.</h2>
-                        <p class="mb-24">Here's your first task for tomorrow: <strong>${firstTask}</strong></p>
-                        <button id="ev-close">Close</button>
-                    `;
-                    document.getElementById('ev-close').onclick = () => {
-                        saveState('reflections', [...state.reflections, answers]);
-                        overlay.classList.add('hidden');
-                    };
-                }
-
-                document.querySelectorAll('.ev-opt').forEach(btn => {
-                    btn.onclick = (e) => {
-                        if(phase === 1) answers.howItWent = e.target.dataset.val;
-                        if(phase === 2) answers.onTrack = e.target.dataset.val;
-                        phase++; renderPhase();
-                    };
-                });
-            };
-
-            renderPhase();
-            overlay.classList.remove('hidden');
-        };
-
+        // --- Nudge Logic ---
         const nudges = [
             "💧 Grab some water before the next one.",
             "🪟 Look at something far away for 20 seconds. Your eyes need it.",
@@ -2143,42 +2186,16 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             "⏰ Still roughly on track today? 30-second check.",
             "🍎 When did you last eat? Low fuel = foggy thinking.",
             "☀️ Is there natural light where you are? Move if not.",
-            "📋 Is the next task clear enough to start immediately? If not, spend 2 min clarifying it before starting."
+            "📋 Is the next task clear enough to start immediately?"
         ];
 
-        let nudgeTimeout;
         const showNudge = () => {
             const nudge = nudges[Math.floor(Math.random() * nudges.length)];
-            document.getElementById('nudge-text').textContent = nudge.substring(2).trim();
-            document.getElementById('nudge-icon').textContent = nudge.substring(0,2).trim();
-            
             const card = document.getElementById('nudge-card');
+            document.getElementById('nudge-text').textContent = nudge;
             card.classList.remove('hidden');
-            
-            clearTimeout(nudgeTimeout);
-            nudgeTimeout = setTimeout(() => {
-                card.classList.add('hidden');
-            }, 6000);
+            setTimeout(() => card.classList.add('hidden'), 6000);
         };
-        document.getElementById('nudge-card').addEventListener('click', () => {
-            document.getElementById('nudge-card').classList.add('hidden');
-        });
-
-        // Inactivity Tracker
-        let inactivityTimer;
-        const resetInactivityTimer = () => {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-                if(['screen-main', 'screen-tasks', 'screen-reminders'].includes(currentScreen)) {
-                    showNudge();
-                }
-            }, 2 * 60 * 60 * 1000); // 2 hours
-        };
-        ['click', 'touchstart', 'mousemove', 'keydown'].forEach(evt => 
-            document.addEventListener(evt, resetInactivityTimer)
-        );
-        resetInactivityTimer();
-
 
         // --- Notification Logic ---
         setInterval(() => {
@@ -2203,11 +2220,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         // --- Init Flow ---
         const init = async () => {
-            isFocusActive = false;
-            document.getElementById('overlay-distraction').classList.add('hidden');
-            
             const { data } = await supabase.auth.getSession();
-            
+
             if (data.session) {
                 checkCheckin();
             } else {
@@ -2218,9 +2232,13 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                     showScreen('screen-login');
                 }
             }
-            getNextQuickReset();
-            setupSignout();
         };
+
+        document.getElementById('btn-signout').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            localStorage.clear();
+            location.reload();
+        });
 
         const showDailyAdvice = () => {
             if (!sessionStorage.getItem('shown_advice_today')) {
