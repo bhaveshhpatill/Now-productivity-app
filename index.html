@@ -17,7 +17,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #F9F7F3;
@@ -528,8 +527,8 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             <h1 class="mb-8 text-center">NOW</h1>
             <p class="mb-24 text-center text-secondary">Your day, one thing at a time.</p>
             <div class="card w-full">
-                <p class="small mb-16 text-center">Enter your email to get started.</p>
-                <input type="email" id="login-email" placeholder="Email Address" autocomplete="email" style="width: 100%; padding: 14px 16px; border-radius: var(--radius-input); border: 1px solid rgba(0,0,0,0.1); font-family: inherit; font-size: 15px; margin-bottom: 16px; background: var(--card-bg); outline: none;">
+                <p class="small mb-16 text-center">Enter your username to get started.</p>
+                <input type="text" id="login-username" placeholder="Username" style="width: 100%; padding: 14px 16px; border-radius: var(--radius-input); border: 1px solid rgba(0,0,0,0.1); font-family: inherit; font-size: 15px; margin-bottom: 16px; background: var(--card-bg); outline: none;">
                 <button id="btn-login">Continue</button>
             </div>
         </div>
@@ -875,28 +874,17 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
     </div>
 
     <script>
-        const SUPABASE_URL = "zgptpjjaonkrqowijtba";
-        const SUPABASE_ANON_KEY = "sb_publishable_QOe3_erVAaW7Ond8pAH0bA_5tzvA8e1";
+        // --- Auth Storage Helpers ---
+        function getUser() { return localStorage.getItem("now_user"); }
+        function setUser(user) { localStorage.setItem("now_user", user); }
+        function getPinHash() { return localStorage.getItem("now_pinHash"); }
+        function setPinHash(hash) { localStorage.setItem("now_pinHash", hash); }
 
-        if (!window._supabaseClient) {
-            window._supabaseClient = window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_ANON_KEY
-            );
-        }
-
-        const sb = window._supabaseClient;
-
-        console.log("Supabase Global:", window.supabase);
-        console.log("Supabase Client:", sb);
-
-        // --- Email Storage Helpers ---
-        function getUserEmail() {
-            return localStorage.getItem("now_email");
-        }
-
-        function setUserEmail(email) {
-            localStorage.setItem("now_email", email);
+        async function hashPin(pin) {
+            const msgBuffer = new TextEncoder().encode(pin);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
         // --- State Management ---
@@ -960,12 +948,16 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         });
 
         document.getElementById('btn-login').addEventListener('click', () => {
-            const email = document.getElementById('login-email').value.trim();
-            if (email) {
-                setUserEmail(email);
-                showScreen('screen-pin-setup');
+            const user = document.getElementById('login-username').value.trim();
+            if (user) {
+                setUser(user);
+                if (getPinHash()) {
+                    showScreen('screen-pin-entry');
+                } else {
+                    showScreen('screen-pin-setup');
+                }
             } else {
-                alert("Please enter a valid email");
+                alert("Please enter a valid username");
             }
         });
 
@@ -973,10 +965,6 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
         let pinBuffer = '';
 
         const handleNumpad = async (val, mode) => {
-            if (!sb || !sb.auth) {
-                console.error("Supabase not initialized");
-                return;
-            }
             if (val === 'del') {
                 pinBuffer = pinBuffer.slice(0, -1);
             } else if (pinBuffer.length < 4) {
@@ -990,42 +978,20 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
             }
 
             if (pinBuffer.length === 4) {
-                let email = getUserEmail();
+                const hash = await hashPin(pinBuffer);
 
                 if (mode === 'setup') {
-                    if (!email) {
-                        email = prompt("Enter your email:");
-                        if (!email) return;
-                    }
-
-                    const { error } = await sb.auth.signUp({
-                        email,
-                        password: pinBuffer
-                    });
-
-                    if (error && !error.message.includes("already")) {
-                        alert(error.message);
-                        pinBuffer = '';
-                        return;
-                    }
-
-                    setUserEmail(email);
+                    setPinHash(hash);
                     pinBuffer = '';
                     checkCheckin();
                 }
 
                 if (mode === 'entry') {
-                    if (!email) {
-                        alert("No account found");
-                        return;
-                    }
-
-                    const { error } = await sb.auth.signInWithPassword({
-                        email,
-                        password: pinBuffer
-                    });
-
-                    if (error) {
+                    const storedHash = getPinHash();
+                    if (hash === storedHash) {
+                        pinBuffer = '';
+                        checkCheckin();
+                    } else {
                         const dotsContainer = document.getElementById('entry-dots');
                         dotsContainer.classList.add('shake');
 
@@ -1034,11 +1000,7 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
                             pinBuffer = '';
                             for (let i = 0; i < 4; i++) dots[i].classList.remove('filled');
                         }, 400);
-                        return;
                     }
-
-                    pinBuffer = '';
-                    checkCheckin();
                 }
             }
         };
@@ -2244,27 +2206,17 @@ Features: PIN protection, daily check-ins, smart task selection, focus mode,
 
         // --- Init Flow ---
         const init = async () => {
-            if (!sb || !sb.auth) {
-                console.error("Supabase not initialized");
-                return;
-            }
+            const user = getUser();
+            const pinHash = getPinHash();
 
-            const { data, error } = await sb.auth.getSession();
-            const session = data?.session;
-
-            if (session) {
-                checkCheckin();
+            if (user && pinHash) {
+                showScreen('screen-pin-entry');
             } else {
                 showScreen('screen-login');
             }
         };
 
         const handleSignOut = async () => {
-            if (!sb || !sb.auth) {
-                console.error("Supabase not initialized");
-                return;
-            }
-            await sb.auth.signOut();
             localStorage.clear();
             location.reload();
         };
