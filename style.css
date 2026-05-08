@@ -322,12 +322,24 @@
         }
 
         .streak-badge {
-            background: var(--accent-soft);
-            color: var(--accent);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 13px;
+            background: white;
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        #sync-indicator {
+            font-size: 16px;
+            cursor: help;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        #sync-indicator:hover {
+            opacity: 1;
+            transform: scale(1.1);
         }
 
         .badge {

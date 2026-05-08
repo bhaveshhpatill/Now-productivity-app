@@ -1,5 +1,43 @@
+/*
+=============================================================================
+SUPABASE INTEGRATION SCHEMA (Run this in your Supabase SQL Editor)
+=============================================================================
+
+-- 1. Create Profiles table
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  username TEXT UNIQUE,
+  pin_hash TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. Create App Data table (JSON storage for simplicity/portability)
+CREATE TABLE IF NOT EXISTS user_data (
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  tasks JSONB DEFAULT '[]',
+  reminders JSONB DEFAULT '[]',
+  notes JSONB DEFAULT '[]',
+  checkins JSONB DEFAULT '[]',
+  reflections JSONB DEFAULT '[]',
+  streak JSONB DEFAULT '{"current":0,"lastDate":null}',
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. Enable RLS
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_data ENABLE ROW LEVEL SECURITY;
+
+-- 4. Create Policies
+CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can view own data" ON user_data FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own data" ON user_data FOR ALL USING (auth.uid() = user_id);
+=============================================================================
+*/
+
 console.log("APP JS LOADED");
 
+let supabaseInstance;
 try {
     if (!window.supabase) {
         throw new Error("Supabase CDN not loaded");
@@ -9,14 +47,12 @@ try {
     const SUPABASE_ANON_KEY = "sb_publishable_QnqXD-mlp83KAmLg3b73Jg_XiZIryX2";
 
     const { createClient } = window.supabase;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseInstance = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = supabaseInstance;
 
-    window.supabaseClient = supabase;
-
-    console.log("✅ Supabase connected:", supabase);
-
+    console.log("✅ Supabase initialized");
 } catch (err) {
-    console.error("❌ INIT FAILED:", err);
+    console.error("❌ SUPABASE INIT FAILED:", err);
 }
 
 
@@ -89,9 +125,86 @@ try {
             streak: JSON.parse(localStorage.getItem('now_streak') || '{"current":0,"lastDate":null}')
         };
 
-        const saveState = (key, value) => {
+        let isSyncing = false;
+        const setSyncStatus = (status) => {
+            const indicator = document.getElementById('sync-indicator');
+            if (indicator) {
+                indicator.textContent = status === 'syncing' ? '🔄' : status === 'done' ? '✅' : '❌';
+                indicator.title = status === 'syncing' ? 'Syncing with Supabase...' : status === 'done' ? 'Synced' : 'Sync Failed';
+            }
+        };
+
+        const saveState = async (key, value) => {
             state[key] = value;
             localStorage.setItem(`now_${key}`, JSON.stringify(value));
+            
+            // Push to Supabase if available
+            if (supabaseInstance && !isSyncing) {
+                syncToSupabase();
+            }
+        };
+
+        const syncToSupabase = async () => {
+            try {
+                const { data: { user } } = await supabaseInstance.auth.getUser();
+                if (!user) return;
+
+                isSyncing = true;
+                setSyncStatus('syncing');
+
+                const { error } = await supabaseInstance
+                    .from('user_data')
+                    .upsert({
+                        user_id: user.id,
+                        tasks: state.tasks,
+                        reminders: state.reminders,
+                        notes: state.notes,
+                        checkins: state.checkins,
+                        reflections: state.reflections,
+                        streak: state.streak,
+                        updated_at: new Date().toISOString()
+                    });
+
+                if (error) throw error;
+                setSyncStatus('done');
+            } catch (err) {
+                console.error("Supabase Sync Error:", err);
+                setSyncStatus('error');
+            } finally {
+                isSyncing = false;
+            }
+        };
+
+        const loadStateFromSupabase = async () => {
+            try {
+                const { data: { user } } = await supabaseInstance.auth.getUser();
+                if (!user) return;
+
+                setSyncStatus('syncing');
+                const { data, error } = await supabaseInstance
+                    .from('user_data')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+
+                if (data) {
+                    // Merge Supabase data into state and localStorage
+                    const keys = ['tasks', 'reminders', 'notes', 'checkins', 'reflections', 'streak'];
+                    keys.forEach(key => {
+                        if (data[key]) {
+                            state[key] = data[key];
+                            localStorage.setItem(`now_${key}`, JSON.stringify(data[key]));
+                        }
+                    });
+                    console.log("✅ Data loaded from Supabase");
+                    setSyncStatus('done');
+                }
+            } catch (err) {
+                console.error("Supabase Load Error:", err);
+                setSyncStatus('error');
+            }
         };
 
         const getTodayStr = () => new Date().toISOString().split('T')[0];
@@ -154,10 +267,28 @@ try {
             nav.addEventListener('click', () => showScreen(nav.dataset.target));
         });
 
-        document.getElementById('btn-login').addEventListener('click', () => {
+        document.getElementById('btn-login').addEventListener('click', async () => {
             const user = document.getElementById('login-username').value.trim();
             if (user) {
                 setUser(user);
+                
+                // If we have supabase, try to sign in or sign up
+                if (supabaseInstance) {
+                    const email = `${user.toLowerCase()}@now.app`;
+                    const tempPass = "dummy_pass_123"; // We will update with real PIN later
+                    
+                    try {
+                        // Just check if user exists or not
+                        const { data, error } = await supabaseInstance.auth.signInWithPassword({
+                            email: email,
+                            password: tempPass,
+                        });
+                        
+                        // We don't actually sign in here because we don't have the PIN yet.
+                        // We just store the username and move to PIN screen.
+                    } catch (e) {}
+                }
+
                 if (getPinHash()) {
                     showScreen('screen-pin-entry');
                 } else {
@@ -191,9 +322,52 @@ try {
 
             if (pinBuffer.length === 4) {
                 const hash = await hashPin(pinBuffer);
+                const username = getUser();
+                const email = `${username.toLowerCase()}@now.app`;
+                const password = `pin_${pinBuffer}`; // Use pin as password for Supabase Auth
 
                 if (mode === 'setup') {
                     setPinHash(hash);
+                    
+                    if (supabaseInstance) {
+                        try {
+                            setSyncStatus('syncing');
+                            // 1. Sign Up
+                            const { data: authData, error: signUpError } = await supabaseInstance.auth.signUp({
+                                email,
+                                password,
+                                options: { data: { username } }
+                            });
+                            
+                            if (signUpError) throw signUpError;
+
+                            // 2. Initialize profiles and user_data
+                            if (authData.user) {
+                                // Insert profile
+                                await supabaseInstance.from('profiles').insert({
+                                    id: authData.user.id,
+                                    username: username,
+                                    pin_hash: hash
+                                });
+
+                                // Insert app data
+                                await supabaseInstance.from('user_data').insert({
+                                    user_id: authData.user.id,
+                                    tasks: state.tasks,
+                                    reminders: state.reminders,
+                                    notes: state.notes,
+                                    checkins: state.checkins,
+                                    reflections: state.reflections,
+                                    streak: state.streak
+                                });
+                            }
+                            setSyncStatus('done');
+                        } catch (err) {
+                            console.error("Supabase Setup Error:", err);
+                            setSyncStatus('error');
+                        }
+                    }
+
                     pinBuffer = '';
                     checkCheckin();
                 }
@@ -201,6 +375,26 @@ try {
                 if (mode === 'entry') {
                     const storedHash = getPinHash();
                     if (hash === storedHash) {
+                        
+                        if (supabaseInstance) {
+                            try {
+                                setSyncStatus('syncing');
+                                const { error: signInError } = await supabaseInstance.auth.signInWithPassword({
+                                    email,
+                                    password
+                                });
+                                if (signInError) throw signInError;
+                                
+                                // Load fresh data from cloud
+                                await loadStateFromSupabase();
+                                setSyncStatus('done');
+                            } catch (err) {
+                                console.error("Supabase SignIn Error:", err);
+                                setSyncStatus('error');
+                                // Continue anyway with local data if sign-in fails but PIN is correct locally
+                            }
+                        }
+
                         pinBuffer = '';
                         checkCheckin();
                     } else {
@@ -1332,15 +1526,28 @@ try {
         };
 
         // --- Signout ---
-        const handleSignOut = () => { localStorage.clear(); location.reload(); };
+        const handleSignOut = async () => { 
+            if (supabaseInstance) await supabaseInstance.auth.signOut();
+            localStorage.clear(); 
+            location.reload(); 
+        };
         document.getElementById('btn-signout').addEventListener('click', handleSignOut);
         document.getElementById('btn-signout-pre').addEventListener('click', handleSignOut);
 
         // --- Init ---
-        const init = () => {
+        const init = async () => {
             const user = getUser();
             const pinHash = getPinHash();
             if (user && pinHash) {
+                // Try auto-login with Supabase if session exists
+                if (supabaseInstance) {
+                    const { data: { session } } = await supabaseInstance.auth.getSession();
+                    if (session) {
+                        await loadStateFromSupabase();
+                        checkCheckin();
+                        return;
+                    }
+                }
                 document.getElementById('entry-greeting').textContent = `Welcome back, ${user}.`;
                 showScreen('screen-pin-entry');
             } else {
